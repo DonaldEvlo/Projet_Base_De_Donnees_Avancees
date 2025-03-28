@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import DashboardEtudiant from "./pages/DashboardEtudiant";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import NotFound from "./pages/NotFound";
+import DashboardEtudiant from "./pages/dashboardEtudiant";
+import Home from "./pages/home";
+import Login from "./pages/signin";
+import Register from "./pages/signup";
+import NotFound from "./pages/notFound";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
