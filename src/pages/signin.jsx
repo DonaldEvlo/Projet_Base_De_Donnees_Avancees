@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../styles/signin.css"; // Importer le fichier CSS
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -32,35 +33,35 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center">Connexion</h2>
+    <div className="login-container">
+      <div className="login-box">
+        <h2 className="login-title">Connexion</h2>
         
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        {error && <p className="login-error">{error}</p>}
         
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="login-form">
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-2 border rounded"
+            className="login-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
             type="password"
             placeholder="Mot de passe"
-            className="w-full p-2 border rounded"
+            className="login-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+          <button type="submit" className="login-button">
             Se connecter
           </button>
         </form>
 
-        <p className="text-sm mt-3 text-center">
+        <p className="login-register-link">
           Pas encore inscrit ? 
-          <a href="/register" className="text-blue-500 hover:underline"> Créer un compte</a>
+          <a href="/register" className="register-link"> Créer un compte</a>
         </p>
       </div>
     </div>

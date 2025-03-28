@@ -1,0 +1,59 @@
+/* Styles pour le composant Home */
+.home-container {
+    @apply h-screen flex flex-col;
+  }
+  
+  /* Navbar */
+  .navbar {
+    @apply bg-blue-500 p-4 shadow-md;
+  }
+  
+  .navbar-container {
+    @apply container mx-auto flex justify-between items-center;
+  }
+  
+  .navbar-title {
+    @apply text-white text-2xl font-bold;
+  }
+  
+  .navbar-links {
+    @apply flex items-center;
+  }
+  
+  .navbar-link {
+    @apply text-white mr-4 hover:underline;
+  }
+  
+  .navbar-signup-button {
+    @apply bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-200;
+  }
+  
+  /* Contenu principal */
+  .main-content {
+    @apply flex-grow flex flex-col justify-center items-center text-center p-6 bg-gray-100;
+  }
+  
+  .main-title {
+    @apply text-4xl font-bold text-gray-800 mb-4;
+  }
+  
+  .main-description {
+    @apply text-lg text-gray-600 max-w-2xl;
+  }
+  
+  .main-actions {
+    @apply mt-6;
+  }
+  
+  .main-action-button {
+    @apply px-6 py-3 rounded-lg text-lg;
+  }
+  
+  .login-button {
+    @apply bg-blue-500 text-white mr-4 hover:bg-blue-600;
+  }
+  
+  .signup-button {
+    @apply bg-gray-300 text-gray-800 hover:bg-gray-400;
+  }
+  

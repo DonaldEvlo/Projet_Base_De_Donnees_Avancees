@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* S'assurer que tout prend la pleine hauteur */
+html, body, #root {
+  @apply h-full m-0; /* Assurez-vous qu'il n'y ait pas de marges par défaut */
+}
+
+/* Conteneur principal */
+.dashboard-container {
+  @apply flex w-full min-h-screen bg-gray-100;
+}
+
+/* Sidebar */
+.sidebar {
+  @apply w-64 bg-blue-700 text-white p-5 flex flex-col;
+}
+
+/* Menu de la sidebar */
+.sidebar-title {
+  @apply text-xl font-bold mb-5;
+}
+
+.sidebar-menu {
+  @apply space-y-3;
+}
+
+.sidebar-link {
+  @apply block hover:underline;
+}
+
+.logout {
+  @apply text-red-300;
+}
+
+/* Contenu principal */
+.main-content {
+  @apply flex-1 p-6 w-full px-0; /* Assurez-vous que le contenu principal occupe toute la largeur */
+}
+
+/* Texte de bienvenue */
+.welcome-text {
+  @apply text-3xl font-bold mb-6;
+}
+
+/* Cartes (Graphiques et tableaux) */
+.card {
+  @apply bg-white p-6 rounded-lg shadow-lg mb-6 w-full; /* Cartes prennent toute la largeur */
+}
+
+.card-title {
+  @apply text-xl font-semibold mb-4;
+}
+
+/* Tableau */
+.table {
+  @apply w-full border-collapse; /* Tableau prend toute la largeur */
+}
+
+.table thead {
+  @apply bg-gray-200;
+}
+
+.table th, .table td {
+  @apply p-3 text-left border-b;
+}
+
+/* Statut des étudiants */
+.text-green {
+  @apply text-green-500;
+}
+
+.text-red {
+  @apply text-red-500;
+}

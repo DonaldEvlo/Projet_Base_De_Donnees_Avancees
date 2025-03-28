@@ -1,0 +1,37 @@
+
+nav {
+    @apply bg-gray-900 p-4 shadow-lg;
+  }
+  
+  /* Conteneur pour les éléments de la navbar */
+  nav ul {
+    @apply flex justify-around items-center space-x-4;
+  }
+  
+  /* Élément de chaque lien de la navbar */
+  nav li {
+    @apply text-white hover:text-gray-400 transition-all duration-300;
+  }
+  
+  /* Lien actif */
+  nav a.active {
+    @apply text-teal-400 font-bold;
+  }
+  
+  /* Pour les petits écrans, transformer la navbar en une colonne verticale */
+  @media (max-width: 768px) {
+    nav ul {
+      @apply flex-col items-start mt-4 space-y-4;
+    }
+  
+    /* Lien dans la navbar sur mobile */
+    nav li {
+      @apply w-full text-left p-4;
+    }
+  }
+  
+  /* Pour la gestion du hover */
+  nav li:hover {
+    @apply text-gray-400;
+  }
+  

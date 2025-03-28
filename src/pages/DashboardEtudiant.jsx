@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import "../styles/dashboardEtudiant.css"; // Lier le fichier CSS
 
 const DashboardEtudiant = () => {
   // Données du graphique
@@ -19,36 +20,36 @@ const DashboardEtudiant = () => {
   ]);
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-container">
       {/* Sidebar */}
-      <div className="w-64 bg-blue-700 text-white p-5">
-        <h2 className="text-xl font-bold mb-5">Dashboard Étudiant</h2>
-        <ul className="space-y-3">
+      <div className="sidebar">
+        <h2 className="sidebar-title">Dashboard Étudiant</h2>
+        <ul className="sidebar-menu">
           <li>
-            <Link to="/" className="hover:underline">🏠 Accueil</Link>
+            <Link to="/" className="sidebar-link">🏠 Accueil</Link>
           </li>
           <li>
-            <Link to="/exercices" className="hover:underline">📚 Mes Exercices</Link>
+            <Link to="/exercices" className="sidebar-link">📚 Mes Exercices</Link>
           </li>
           <li>
-            <Link to="/stats" className="hover:underline">📊 Statistiques</Link>
+            <Link to="/stats" className="sidebar-link">📊 Statistiques</Link>
           </li>
           <li>
-            <Link to="/profile" className="hover:underline">👤 Profil</Link>
+            <Link to="/profile" className="sidebar-link">👤 Profil</Link>
           </li>
           <li>
-            <Link to="/logout" className="hover:underline text-red-300">🚪 Déconnexion</Link>
+            <Link to="/logout" className="sidebar-link logout">🚪 Déconnexion</Link>
           </li>
         </ul>
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 p-6 bg-gray-100">
-        <h1 className="text-3xl font-bold mb-6">Bienvenue, Étudiant ! 👋</h1>
+      <div className="main-content">
+        <h1 className="welcome-text">Bienvenue, Étudiant ! 👋</h1>
 
         {/* Graphique des performances */}
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">📊 Progression des Notes</h2>
+        <div className="card">
+          <h2 className="card-title">📊 Progression des Notes</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data}>
               <XAxis dataKey="name" />
@@ -60,21 +61,13 @@ const DashboardEtudiant = () => {
         </div>
 
         {/* Liste des exercices */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">📚 Mes Exercices</h2>
+        <div className="card">
+          <h2 className="card-title">📚 Mes Exercices</h2>
           <ul>
             {exercices.map((exo) => (
-              <li key={exo.id} className="flex justify-between p-3 border-b">
+              <li key={exo.id} className="exercise-item">
                 <span>{exo.titre}</span>
-                <span
-                  className={`px-3 py-1 rounded text-white ${
-                    exo.status === "Terminé"
-                      ? "bg-green-500"
-                      : exo.status === "En cours"
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`}
-                >
+                <span className={`status-badge ${exo.status.toLowerCase().replace(" ", "-")}`}>
                   {exo.status}
                 </span>
               </li>

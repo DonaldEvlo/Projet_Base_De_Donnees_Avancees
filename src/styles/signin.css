@@ -1,0 +1,37 @@
+
+.login-container {
+    @apply flex justify-center items-center h-screen bg-gray-100;
+  }
+  
+  .login-box {
+    @apply bg-white p-8 rounded-lg shadow-lg w-96;
+  }
+  
+  .login-title {
+    @apply text-2xl font-bold mb-4 text-center;
+  }
+  
+  .login-error {
+    @apply text-red-500 text-sm mb-3;
+  }
+  
+  .login-form {
+    @apply space-y-4;
+  }
+  
+  .login-input {
+    @apply w-full p-2 border rounded;
+  }
+  
+  .login-button {
+    @apply w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600;
+  }
+  
+  .login-register-link {
+    @apply text-sm mt-3 text-center;
+  }
+  
+  .register-link {
+    @apply text-blue-500 hover:underline;
+  }
+  

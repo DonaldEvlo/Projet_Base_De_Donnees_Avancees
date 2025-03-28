@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import "../styles/dashboardProf.css";
 
 const DashboardProf = () => {
-  // Données des performances des étudiants
   const data = [
     { name: "Alice", moyenne: 14 },
     { name: "Bob", moyenne: 16 },
@@ -11,7 +11,6 @@ const DashboardProf = () => {
     { name: "David", moyenne: 18 },
   ];
 
-  // Liste des étudiants avec leur progression
   const [etudiants] = useState([
     { id: 1, nom: "Alice", progression: "Bon", status: "Actif" },
     { id: 2, nom: "Bob", progression: "Excellent", status: "Actif" },
@@ -20,36 +19,26 @@ const DashboardProf = () => {
   ]);
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-container">
       {/* Sidebar */}
-      <div className="w-64 bg-blue-700 text-white p-5">
-        <h2 className="text-xl font-bold mb-5">Dashboard Professeur</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link to="/" className="hover:underline">🏠 Accueil</Link>
-          </li>
-          <li>
-            <Link to="/etudiants" className="hover:underline">👨‍🎓 Gérer Étudiants</Link>
-          </li>
-          <li>
-            <Link to="/exercices" className="hover:underline">📚 Exercices</Link>
-          </li>
-          <li>
-            <Link to="/stats" className="hover:underline">📊 Statistiques</Link>
-          </li>
-          <li>
-            <Link to="/logout" className="hover:underline text-red-300">🚪 Déconnexion</Link>
-          </li>
+      <aside className="sidebar">
+        <h2 className="sidebar-title">Dashboard Professeur</h2>
+        <ul className="sidebar-menu">
+          <li><Link to="/" className="sidebar-link">🏠 Accueil</Link></li>
+          <li><Link to="/etudiants" className="sidebar-link">👨‍🎓 Gérer Étudiants</Link></li>
+          <li><Link to="/exercices" className="sidebar-link">📚 Exercices</Link></li>
+          <li><Link to="/stats" className="sidebar-link">📊 Statistiques</Link></li>
+          <li><Link to="/logout" className="sidebar-link logout">🚪 Déconnexion</Link></li>
         </ul>
-      </div>
+      </aside>
 
       {/* Contenu principal */}
-      <div className="flex-1 p-6 bg-gray-100">
-        <h1 className="text-3xl font-bold mb-6">Bienvenue, Professeur ! 👨‍🏫</h1>
+      <main className="main-content">
+        <h1 className="welcome-text">Bienvenue, Professeur ! 👨‍🏫</h1>
 
-        {/* Graphique des performances globales */}
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">📊 Performances des Étudiants</h2>
+        {/* Graphique des performances */}
+        <section className="card">
+          <h2 className="card-title">📊 Performances des Étudiants</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={data}>
               <XAxis dataKey="name" />
@@ -58,37 +47,33 @@ const DashboardProf = () => {
               <Bar dataKey="moyenne" fill="#3b82f6" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </section>
 
         {/* Tableau des étudiants */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">👨‍🎓 Liste des Étudiants</h2>
-          <table className="w-full border-collapse">
+        <section className="card">
+          <h2 className="card-title">👨‍🎓 Liste des Étudiants</h2>
+          <table className="table">
             <thead>
-              <tr className="bg-gray-200">
-                <th className="p-3 text-left">Nom</th>
-                <th className="p-3 text-left">Progression</th>
-                <th className="p-3 text-left">Statut</th>
+              <tr>
+                <th>Nom</th>
+                <th>Progression</th>
+                <th>Statut</th>
               </tr>
             </thead>
             <tbody>
               {etudiants.map((etudiant) => (
-                <tr key={etudiant.id} className="border-b">
-                  <td className="p-3">{etudiant.nom}</td>
-                  <td className="p-3">{etudiant.progression}</td>
-                  <td
-                    className={`p-3 ${
-                      etudiant.status === "Actif" ? "text-green-500" : "text-red-500"
-                    }`}
-                  >
+                <tr key={etudiant.id}>
+                  <td>{etudiant.nom}</td>
+                  <td>{etudiant.progression}</td>
+                  <td className={etudiant.status === "Actif" ? "text-green" : "text-red"}>
                     {etudiant.status}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 };

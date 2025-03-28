@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import DashboardProf from "./pages/DashboardProf";
-import DashboardEtudiant from "./pages/DashboardEtudiant";
-import NotFound from "./pages/NotFound";
-import Navbar from "./components/Navbar";
+import Home from "./pages/home";
+import Login from "./pages/signin";
+import Register from "./pages/signup";
+import DashboardProf from "./pages/dashboardProf";
+import DashboardEtudiant from "./pages/dashboardEtudiant";
+import NotFound from "./pages/notFound";
+import Navbar from "./components/navbar";
 
 function App() {
   return (
