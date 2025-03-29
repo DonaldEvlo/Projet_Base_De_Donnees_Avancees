@@ -1,59 +1,186 @@
 /* Styles pour le composant Home */
 .home-container {
-    @apply h-screen flex flex-col;
-  }
-  
-  /* Navbar */
-  .navbar {
-    @apply bg-blue-500 p-4 shadow-md;
-  }
-  
-  .navbar-container {
-    @apply container mx-auto flex justify-between items-center;
-  }
-  
-  .navbar-title {
-    @apply text-white text-2xl font-bold;
-  }
-  
-  .navbar-links {
-    @apply flex items-center;
-  }
-  
-  .navbar-link {
-    @apply text-white mr-4 hover:underline;
-  }
-  
-  .navbar-signup-button {
-    @apply bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-200;
-  }
-  
-  /* Contenu principal */
-  .main-content {
-    @apply flex-grow flex flex-col justify-center items-center text-center p-6 bg-gray-100;
-  }
-  
-  .main-title {
-    @apply text-4xl font-bold text-gray-800 mb-4;
-  }
-  
-  .main-description {
-    @apply text-lg text-gray-600 max-w-2xl;
-  }
-  
-  .main-actions {
-    @apply mt-6;
-  }
-  
-  .main-action-button {
-    @apply px-6 py-3 rounded-lg text-lg;
-  }
-  
-  .login-button {
-    @apply bg-blue-500 text-white mr-4 hover:bg-blue-600;
-  }
-  
-  .signup-button {
-    @apply bg-gray-300 text-gray-800 hover:bg-gray-400;
-  }
-  
+  @apply h-screen flex flex-col;
+  padding-top: 64px; /* Compense la hauteur de la navbar fixe */
+}
+
+/* Navbar */
+.navbar {
+  @apply bg-blue-500 p-4 shadow-md text-white;
+  position: fixed; /* Fixe la barre de navigation */
+  top: 0; /* Place la barre en haut de la page */
+  width: 100%; /* Assure que la barre occupe toute la largeur */
+  z-index: 1000; /* Place la barre au-dessus des autres éléments */
+}
+
+.navbar-container {
+  @apply container mx-auto flex justify-between items-center;
+}
+
+.navbar-title {
+  @apply text-white text-2xl font-bold;
+}
+
+.navbar-links {
+  @apply flex items-center;
+}
+
+.navbar-link {
+  @apply text-white mr-4 hover:underline;
+}
+
+.navbar-signup-button {
+  @apply bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-200;
+}
+
+/* Contenu principal */
+.main-content {
+  @apply flex-grow flex flex-col justify-center items-center text-center p-6 bg-gray-100;
+}
+
+.main-title {
+  @apply text-4xl font-bold text-gray-800 mb-4;
+}
+
+.main-description {
+  @apply text-lg text-gray-600 max-w-2xl;
+}
+
+.main-actions {
+  @apply mt-6;
+}
+
+.main-action-button {
+  @apply px-6 py-3 rounded-lg text-lg;
+}
+
+.login-button {
+  @apply bg-blue-500 text-white mr-4 hover:bg-blue-600;
+}
+
+.signup-button {
+  @apply bg-gray-300 text-gray-800 hover:bg-gray-400;
+}
+
+/* Section "À propos" */
+.about-section {
+  @apply bg-gray-100 p-8 rounded-lg shadow-md text-center mt-8;
+}
+
+.about-section h2 {
+  @apply text-2xl font-bold text-gray-800 mb-4;
+}
+
+.about-section p {
+  @apply text-lg text-gray-600 leading-relaxed;
+}
+
+/* Fonctionnalités */
+.features-container {
+  @apply flex justify-center gap-12 flex-wrap mt-12;
+}
+
+.feature {
+  @apply text-center w-48;
+}
+
+.feature-icon {
+  @apply w-20 h-auto mb-4 transition-transform duration-300 ease-in-out;
+}
+
+.feature-icon:hover {
+  @apply transform scale-110 shadow-lg;
+}
+
+.feature p {
+  @apply text-lg font-semibold text-gray-700;
+}
+
+/* Témoignages */
+.testimonials {
+  @apply bg-white p-8 rounded-lg shadow-md text-center mt-12;
+}
+
+.testimonials h2 {
+  @apply text-2xl font-bold text-gray-800 mb-6;
+}
+
+.testimonials blockquote {
+  @apply text-lg italic text-gray-600 mb-4;
+}
+
+/* Appel à l'action */
+.cta-section {
+  @apply text-center mt-12;
+}
+
+.cta-button {
+  @apply inline-block bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-bold transition-all duration-300 ease-in-out;
+}
+
+.cta-button:hover {
+  @apply bg-blue-600 transform translate-y-[-3px];
+}
+
+/* Global transitions */
+* {
+  transition: all 0.3s ease;
+}
+
+/* Section Étudiant et Enseignant */
+.roles-section {
+  @apply flex justify-center gap-12 flex-wrap mt-12;
+}
+
+.role {
+  @apply text-center w-80 bg-gray-100 p-6 rounded-lg shadow-md;
+}
+
+.role-image {
+  @apply w-full h-48 object-cover rounded-lg mb-4;
+}
+
+.role h3 {
+  @apply text-xl font-bold text-gray-800 mb-4;
+}
+
+.role-details {
+  @apply text-left text-gray-600 mb-4;
+}
+
+.role-details li {
+  @apply mb-2;
+}
+
+.role-link {
+  @apply text-blue-500 font-bold hover:underline;
+}
+
+/* Footer */
+.footer {
+  @apply bg-gray-100 py-8 mt-12;
+}
+
+.footer-container {
+  @apply container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-6;
+}
+
+.footer-column {
+  @apply text-gray-700;
+}
+
+.footer-column h4 {
+  @apply text-lg font-bold mb-4;
+}
+
+.footer-column ul {
+  @apply list-none space-y-2;
+}
+
+.footer-column ul li {
+  @apply text-sm;
+}
+
+.footer-link {
+  @apply text-blue-500 font-bold hover:underline mt-4 inline-block;
+}
