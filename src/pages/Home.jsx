@@ -37,7 +37,7 @@ const Home = () => {
 
   {/* Fonctionnalités */}
   <div className="features-container">
-    <div className="feature">
+    <div className="feature"> 
       <img src="/images/image1.png" alt="Parcours Personnalisée" className="feature-icon hover-effect"/>
       <p><strong>Parcours Personnalisé</strong><br/>Adaptez votre apprentissage à vos besoins.</p>
     </div>
