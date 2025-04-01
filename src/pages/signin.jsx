@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../supabaseClient";
 import "../styles/signin.css"; // Importer le fichier CSS
 
 const Login = () => {
@@ -25,11 +26,24 @@ const Login = () => {
       return;
     }
 
-    // Simuler une connexion réussie (à remplacer par une API plus tard)
-    console.log("Connexion réussie :", { email, password });
+    // Connexion via Supabase (email/password)
+    supabase.auth.signInWithPassword({ email, password })
+      .then(({ data, error }) => {
+        if (error) {
+          setError("Échec de la connexion : " + error.message);
+        } else {
+          console.log("Connexion réussie :", data);
+          navigate("/dashboard-etudiant");
+        }
+      });
+  };
 
-    // Redirige vers le Dashboard après connexion
-    navigate("/dashboard-etudiant");
+  // Connexion via OAuth2 (Google ou GitHub)
+  const handleOAuthLogin = async (provider) => {
+    const { error } = await supabase.auth.signInWithOAuth({ provider });
+    if (error) {
+      setError("Erreur d'authentification via " + provider + ": " + error.message);
+    }
   };
 
   return (
@@ -59,6 +73,21 @@ const Login = () => {
           </button>
         </form>
 
+        <div className="oauth-buttons">
+          <button 
+            onClick={() => handleOAuthLogin('google')} 
+            className="oauth-button google"
+          >
+            Se connecter avec Google
+          </button>
+          <button 
+            onClick={() => handleOAuthLogin('github')} 
+            className="oauth-button github"
+          >
+            Se connecter avec GitHub
+          </button>
+        </div>
+
         <p className="login-register-link">
           Pas encore inscrit ? 
           <a href="/register" className="register-link"> Créer un compte</a>
@@ -69,3 +98,4 @@ const Login = () => {
 };
 
 export default Login;
+
