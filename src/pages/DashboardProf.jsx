@@ -25,9 +25,9 @@ const DashboardProf = () => {
         <h2 className="sidebar-title">Dashboard Professeur</h2>
         <ul className="sidebar-menu">
           <li><Link to="/" className="sidebar-link">🏠 Accueil</Link></li>
-          <li><Link to="/etudiants" className="sidebar-link">👨‍🎓 Gérer Étudiants</Link></li>
+          <li><Link to="/create-exercise" className="sidebar-link">✏️ Créer un Exercice</Link></li>
           <li><Link to="/exercices" className="sidebar-link">📚 Exercices</Link></li>
-          <li><Link to="/stats" className="sidebar-link">📊 Statistiques</Link></li>
+          <li><Link to="/stats" className="sidebar-link">📊 Performances des Etudiants</Link></li>
           <li><Link to="/logout" className="sidebar-link logout">🚪 Déconnexion</Link></li>
         </ul>
       </aside>

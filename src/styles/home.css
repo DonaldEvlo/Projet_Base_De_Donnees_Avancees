@@ -1,21 +1,21 @@
 /* Base stylisée avec arrière-plan */
 .home-container {
-  background: 
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url('/images/background.jpg') no-repeat center center fixed;
-  background-size: cover;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
-}
+background: 
+     linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+     url('/images/background.jpg') no-repeat center center fixed;
+   background-size: cover;
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+   color: white;
+   font-family: 'Segoe UI', sans-serif;
+ }
 
-/* Navbar transparente */
-.navbar {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 1.5rem;
-  backdrop-filter: blur(8px);
+ .navbar {
+ /* Navbar transparente */
+ background: rgba(0, 0, 0, 0.4);
+ padding: 1.5rem;
+ backdrop-filter: blur(8px);
 }
 
 .navbar-brand {
@@ -24,8 +24,7 @@
 }
 
 /* Contenu principal */
-.main-content {
-  flex: 1;
+.main-content {flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -70,56 +69,52 @@
   margin-bottom: 1rem;
 }
 
-.auth-message {
-  margin-bottom: 2rem;
-  opacity: 0.9;
-}
-
 .auth-actions {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 }
 
-.auth-btn {
-  padding: 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  width: 100%;
-}
 
-.login-btn {
-  background: #4361ee;
-  color: white;
-}
+  .auth-btn {
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
 
-.signup-btn {
-  background: transparent;
-  border: 2px solid white;
-  color: white;
-}
 
-.auth-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+  .login-btn {
+    background: #4361ee;
+    color: white;
+  }
 
-.auth-divider {
-  margin: 0.5rem 0;
-  opacity: 0.7;
-}
+  .signup-btn {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+  }
 
-/* Section d'information */
-.info-section {
+  .auth-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .auth-divider {
+    margin: 0.5rem 0;
+    opacity: 0.7;
+  }
+
+  /* Section d'information */
+ .info-section {
   display: flex;
   gap: 2rem;
   width: 100%;
   max-width: 800px;
   margin-top: 2rem;
 }
-
 .info-card {
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(8px);
@@ -129,9 +124,7 @@
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Pied de page */
-.footer {
-  text-align: center;
+.footer {text-align: center;
   padding: 1.5rem;
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(5px);
