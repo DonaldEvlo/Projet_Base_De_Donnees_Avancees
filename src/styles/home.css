@@ -1,186 +1,148 @@
-/* Styles pour le composant Home */
+/* Base stylisée avec arrière-plan */
 .home-container {
-  @apply h-screen flex flex-col;
-  padding-top: 64px; /* Compense la hauteur de la navbar fixe */
+background: 
+     linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+     url('/images/background.jpg') no-repeat center center fixed;
+   background-size: cover;
+   min-height: 100vh;
+   display: flex;
+   flex-direction: column;
+   color: white;
+   font-family: 'Segoe UI', sans-serif;
+ }
+
+ .navbar {
+ /* Navbar transparente */
+ background: rgba(0, 0, 0, 0.4);
+ padding: 1.5rem;
+ backdrop-filter: blur(8px);
 }
 
-/* Navbar */
-.navbar {
-  @apply bg-blue-500 p-4 shadow-md text-white;
-  position: fixed; /* Fixe la barre de navigation */
-  top: 0; /* Place la barre en haut de la page */
-  width: 100%; /* Assure que la barre occupe toute la largeur */
-  z-index: 1000; /* Place la barre au-dessus des autres éléments */
-}
-
-.navbar-container {
-  @apply container mx-auto flex justify-between items-center;
-}
-
-.navbar-title {
-  @apply text-white text-2xl font-bold;
-}
-
-.navbar-links {
-  @apply flex items-center;
-}
-
-.navbar-link {
-  @apply text-white mr-4 hover:underline;
-}
-
-.navbar-signup-button {
-  @apply bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-200;
+.navbar-brand {
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 /* Contenu principal */
-.main-content {
-  @apply flex-grow flex flex-col justify-center items-center text-center p-6 bg-gray-100;
+.main-content {flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
 }
 
-.main-title {
-  @apply text-4xl font-bold text-gray-800 mb-4;
+/* Section hero */
+.hero-section {
+  margin-bottom: 3rem;
 }
 
-.main-description {
-  @apply text-lg text-gray-600 max-w-2xl;
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.main-actions {
-  @apply mt-6;
+.subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.main-action-button {
-  @apply px-6 py-3 rounded-lg text-lg;
+/* Carte d'authentification */
+.auth-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 450px;
+  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  margin-bottom: 3rem;
 }
 
-.login-button {
-  @apply bg-blue-500 text-white mr-4 hover:bg-blue-600;
+.auth-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
 }
 
-.signup-button {
-  @apply bg-gray-300 text-gray-800 hover:bg-gray-400;
+.auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
-/* Section "À propos" */
-.about-section {
-  @apply bg-gray-100 p-8 rounded-lg shadow-md text-center mt-8;
+
+  .auth-btn {
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+
+  .login-btn {
+    background: #4361ee;
+    color: white;
+  }
+
+  .signup-btn {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+  }
+
+  .auth-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .auth-divider {
+    margin: 0.5rem 0;
+    opacity: 0.7;
+  }
+
+  /* Section d'information */
+ .info-section {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  max-width: 800px;
+  margin-top: 2rem;
+}
+.info-card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.about-section h2 {
-  @apply text-2xl font-bold text-gray-800 mb-4;
+.footer {text-align: center;
+  padding: 1.5rem;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(5px);
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
-.about-section p {
-  @apply text-lg text-gray-600 leading-relaxed;
-}
-
-/* Fonctionnalités */
-.features-container {
-  @apply flex justify-center gap-12 flex-wrap mt-12;
-}
-
-.feature {
-  @apply text-center w-48;
-}
-
-.feature-icon {
-  @apply w-20 h-auto mb-4 transition-transform duration-300 ease-in-out;
-}
-
-.feature-icon:hover {
-  @apply transform scale-110 shadow-lg;
-}
-
-.feature p {
-  @apply text-lg font-semibold text-gray-700;
-}
-
-/* Témoignages */
-.testimonials {
-  @apply bg-white p-8 rounded-lg shadow-md text-center mt-12;
-}
-
-.testimonials h2 {
-  @apply text-2xl font-bold text-gray-800 mb-6;
-}
-
-.testimonials blockquote {
-  @apply text-lg italic text-gray-600 mb-4;
-}
-
-/* Appel à l'action */
-.cta-section {
-  @apply text-center mt-12;
-}
-
-.cta-button {
-  @apply inline-block bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-bold transition-all duration-300 ease-in-out;
-}
-
-.cta-button:hover {
-  @apply bg-blue-600 transform translate-y-[-3px];
-}
-
-/* Global transitions */
-* {
-  transition: all 0.3s ease;
-}
-
-/* Section Étudiant et Enseignant */
-.roles-section {
-  @apply flex justify-center gap-12 flex-wrap mt-12;
-}
-
-.role {
-  @apply text-center w-80 bg-gray-100 p-6 rounded-lg shadow-md;
-}
-
-.role-image {
-  @apply w-full h-48 object-cover rounded-lg mb-4;
-}
-
-.role h3 {
-  @apply text-xl font-bold text-gray-800 mb-4;
-}
-
-.role-details {
-  @apply text-left text-gray-600 mb-4;
-}
-
-.role-details li {
-  @apply mb-2;
-}
-
-.role-link {
-  @apply text-blue-500 font-bold hover:underline;
-}
-
-/* Footer */
-.footer {
-  @apply bg-gray-100 py-8 mt-12;
-}
-
-.footer-container {
-  @apply container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-6;
-}
-
-.footer-column {
-  @apply text-gray-700;
-}
-
-.footer-column h4 {
-  @apply text-lg font-bold mb-4;
-}
-
-.footer-column ul {
-  @apply list-none space-y-2;
-}
-
-.footer-column ul li {
-  @apply text-sm;
-}
-
-.footer-link {
-  @apply text-blue-500 font-bold hover:underline mt-4 inline-block;
+/* Responsive */
+@media (max-width: 768px) {
+  .info-section {
+    flex-direction: column;
+  }
+  
+  .auth-card {
+    padding: 1.5rem;
+  }
+  
+  .hero-section h1 {
+    font-size: 2rem;
+  }
 }
