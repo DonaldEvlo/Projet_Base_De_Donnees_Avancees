@@ -1,101 +1,148 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../supabaseClient";
-import "../styles/signin.css"; // Importer le fichier CSS
+import "../styles/signin.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     setError("");
 
-    // Vérification des champs
     if (!email || !password) {
       setError("Tous les champs sont requis !");
+      setIsLoading(false);
       return;
     }
 
-    // Vérification du format email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("Email invalide !");
+      setIsLoading(false);
       return;
     }
 
-    // Connexion via Supabase (email/password)
-    supabase.auth.signInWithPassword({ email, password })
-      .then(({ data, error }) => {
-        if (error) {
-          setError("Échec de la connexion : " + error.message);
-        } else {
-          console.log("Connexion réussie :", data);
-          navigate("/dashboard-etudiant");
-        }
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
       });
+
+      if (authError) throw authError;
+      
+      navigate(data.user?.user_metadata?.role === 'teacher' 
+        ? "/dashboard-prof" 
+        : "/dashboard-etudiant");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Connexion via OAuth2 (Google ou GitHub)
   const handleOAuthLogin = async (provider) => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider });
-    if (error) {
-      setError("Erreur d'authentification via " + provider + ": " + error.message);
+    setError("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider,
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (error) {
+      setError(`Erreur avec ${provider}: ${error.message}`);
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h2 className="login-title">Connexion</h2>
-        
-        {error && <p className="login-error">{error}</p>}
-        
-        <form onSubmit={handleLogin} className="login-form">
-          <input
-            type="email"
-            placeholder="Email"
-            className="login-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            className="login-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit" className="login-button">
-            Se connecter
-          </button>
-        </form>
+      {/* Navbar cohérente */}
+      <nav className="navbar">
+        <div className="navbar-brand">Plateforme SGBD</div>
+        <Link to="/" className="navbar-link">Retour à l'accueil</Link>
+      </nav>
 
-        <div className="oauth-buttons">
-          <button 
-            onClick={() => handleOAuthLogin('google')} 
-            className="oauth-button google"
-          >
-            Se connecter avec Google
-          </button>
-          <button 
-            onClick={() => handleOAuthLogin('github')} 
-            className="oauth-button github"
-          >
-            Se connecter avec GitHub
-          </button>
+      <main className="login-main">
+        <div className="login-card">
+          <h1 className="login-title">Connexion</h1>
+          <p className="login-subtitle">Accédez à votre espace personnel</p>
+
+          {error && <div className="login-error-message">{error}</div>}
+
+          <form onSubmit={handleLogin} className="login-form">
+            <div className="form-group">
+              <input
+                type="email"
+                name="email"
+                placeholder="Adresse email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                placeholder="Mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="login-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+            </button>
+          </form>
+
+          <div className="login-separator">
+            <span>OU</span>
+          </div>
+
+          <div className="oauth-buttons">
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin('google')}
+              className="oauth-button google"
+            >
+              <span className="oauth-icon">G</span>
+              Continuer avec Google
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOAuthLogin('github')}
+              className="oauth-button github"
+            >
+              <span className="oauth-icon">G</span>
+              Continuer avec GitHub
+            </button>
+          </div>
+
+          <p className="register-link">
+            Pas encore inscrit ?{' '}
+            <Link to="/register" className="register-link-text">
+              Créer un compte
+            </Link>
+          </p>
         </div>
-
-        <p className="login-register-link">
-          Pas encore inscrit ? 
-          <a href="/register" className="register-link"> Créer un compte</a>
-        </p>
-      </div>
+      </main>
     </div>
   );
 };
 
 export default Login;
-

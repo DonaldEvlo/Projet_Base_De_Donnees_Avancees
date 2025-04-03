@@ -1,61 +1,221 @@
-
+/* Style de base cohérent avec l'accueil */
 .login-container {
-    @apply flex justify-center items-center h-screen bg-gray-100;
-  }
-  
-  .login-box {
-    @apply bg-white p-8 rounded-lg shadow-lg w-96;
-  }
-  
-  .login-title {
-    @apply text-2xl font-bold mb-4 text-center;
-  }
-  
-  .login-error {
-    @apply text-red-500 text-sm mb-3;
-  }
-  
-  .login-form {
-    @apply space-y-4;
-  }
-  
-  .login-input {
-    @apply w-full p-2 border rounded;
-  }
-  
-  .login-button {
-    @apply w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600;
-  }
-  
-  .login-register-link {
-    @apply text-sm mt-3 text-center;
-  }
-  
-  .register-link {
-    @apply text-blue-500 hover:underline;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('/images/background.jpg') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.navbar-link {
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.navbar-link:hover {
+  opacity: 0.8;
+}
+
+/* Carte de connexion */
+.login-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  padding: 2rem;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 450px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.login-title {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.login-subtitle {
+  text-align: center;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* Formulaire */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-input {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Bouton de connexion */
+.login-button {
+  padding: 1rem;
+  border-radius: 8px;
+  background: #4361ee;
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 1rem;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #3a56d4;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Séparateur */
+.login-separator {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.login-separator::before,
+.login-separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-separator span {
+  padding: 0 1rem;
+}
+
+/* Boutons OAuth */
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.oauth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.oauth-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.google {
+  background: white;
+  color: #757575;
+}
+
+.github {
+  background: #333;
+  color: white;
+}
+
+.oauth-icon {
+  font-weight: bold;
+}
+
+/* Message d'erreur */
+.login-error-message {
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Lien d'inscription */
+.register-link {
+  text-align: center;
+  opacity: 0.9;
+}
+
+.register-link-text {
+  color: white;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+.register-link-text:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .login-card {
+    padding: 1.5rem;
   }
   
   .oauth-buttons {
-    margin-top: 1rem;
-    display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
   }
-  
-  .oauth-button {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-  }
-  
-  .google {
-    background-color: #db4437;
-  }
-  
-  .github {
-    background-color: #333;
-  }
-  
-  
+}
