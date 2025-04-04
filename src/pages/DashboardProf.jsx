@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
+
 import "../styles/dashboardProf.css";
 
 const DashboardProf = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const data = [
     { name: "Alice", moyenne: 14 },
     { name: "Bob", moyenne: 16 },
@@ -18,6 +22,18 @@ const DashboardProf = () => {
     { id: 4, nom: "David", progression: "Très bon", status: "Actif" },
   ]);
 
+  const handleLogout = async () => {
+    try {
+      console.log("Déconnexion en cours...");
+      await signOut();
+      setUser(null); // 🔹 Déconnecte l'utilisateur localement
+      console.log("Déconnexion réussie !");
+      navigate("/"); // 🔹 Redirige immédiatement
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error.message);
+    }
+  };
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -28,7 +44,11 @@ const DashboardProf = () => {
           <li><Link to="/create-exercise" className="sidebar-link">✏️ Créer un Exercice</Link></li>
           <li><Link to="/exercices" className="sidebar-link">📚 Exercices</Link></li>
           <li><Link to="/stats" className="sidebar-link">📊 Performances des Etudiants</Link></li>
-          <li><Link to="/logout" className="sidebar-link logout">🚪 Déconnexion</Link></li>
+          <li>
+            <button onClick={handleLogout} className="sidebar-link logout">
+              🚪 Déconnexion
+            </button>
+          </li>
         </ul>
       </aside>
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmail, signUpWithEmail } from "../../backend/services/authServices";
 import "../styles/signup.css";
 
 function Register() {
@@ -7,23 +8,51 @@ function Register() {
     username: "",
     email: "",
     password: "",
-    role: "teacher" // Ajout du rôle
+    role: "professeur", // default: teacher
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Ajoutez ici la logique pour envoyer les données au backend
+    setError("");
+    setLoading(true);
+
+    try {
+      const user = await signUpWithEmail(
+        formData.username,
+        formData.email,
+        formData.password,
+        formData.role
+      );
+
+      await signInWithEmail(formData.email, formData.password);
+
+      console.log("✅ Utilisateur inscrit :", user);
+
+      console.log("🔑 Connexion réussie ! LE role est", formData.role);
+      if (formData.role === "etudiant") {
+        console.log("Le role est :", formData.role);
+        navigate("/dashboard-etudiant");
+      } else {
+        navigate("/dashboard-prof");
+      }
+    } catch (err) {
+      console.error("❌ Erreur d'inscription :", err);
+      setError(err.message || "Erreur lors de l'inscription.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="register-container">
-      {/* Navbar cohérente avec l'accueil */}
       <nav className="navbar">
         <div className="navbar-brand">Plateforme SGBD</div>
         <Link to="/" className="navbar-link">Retour à l'accueil</Link>
@@ -36,6 +65,8 @@ function Register() {
             Rejoignez notre plateforme en tant qu'enseignant ou étudiant
           </p>
 
+          {error && <div className="register-error">{error}</div>}
+
           <form onSubmit={handleSubmit} className="register-form">
             {/* Sélection du rôle */}
             <div className="form-group role-selection">
@@ -43,19 +74,19 @@ function Register() {
                 <input
                   type="radio"
                   name="role"
-                  value="teacher"
-                  checked={formData.role === "teacher"}
+                  value="professeur"
+                  checked={formData.role === "professeur"}
                   onChange={handleChange}
                 />
                 <span className="role-label teacher-label">Enseignant</span>
               </label>
-              
+
               <label className="role-option">
                 <input
                   type="radio"
                   name="role"
-                  value="student"
-                  checked={formData.role === "student"}
+                  value="etudiant"
+                  checked={formData.role === "etudiant"}
                   onChange={handleChange}
                 />
                 <span className="role-label student-label">Étudiant</span>
@@ -99,8 +130,8 @@ function Register() {
               />
             </div>
 
-            <button type="submit" className="register-button">
-              S'inscrire
+            <button type="submit" className="register-button" disabled={loading}>
+              {loading ? "Création du compte..." : "S'inscrire"}
             </button>
           </form>
 

@@ -44,7 +44,7 @@ export const signUpWithEmail = async (username, email, password,role, subject) =
         nom: username,
         email: data.user.email,
         mot_de_passe: password,
-        matiere_nom: subject,
+        matiere_nom: "BD",
         date_inscription: new Date().toISOString(),
         oauth_provider: 'email',
         oauth_id: data.user.id
