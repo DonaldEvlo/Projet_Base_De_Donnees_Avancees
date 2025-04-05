@@ -8,7 +8,9 @@ function Register() {
     username: "",
     email: "",
     password: "",
-    role: "professeur", // default: teacher
+    role: "professeur", // Par défaut : enseignant
+    classe: "", // Nouvel état pour la classe
+    filiere: "", // Nouvel état pour la filière
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -29,16 +31,18 @@ function Register() {
         formData.username,
         formData.email,
         formData.password,
-        formData.role
+        formData.role,
+        formData.classe, // Ajout de la classe
+        formData.filiere // Ajout de la filière
       );
 
       await signInWithEmail(formData.email, formData.password);
 
       console.log("✅ Utilisateur inscrit :", user);
 
-      console.log("🔑 Connexion réussie ! LE role est", formData.role);
+      console.log("🔑 Connexion réussie ! Le rôle est", formData.role);
       if (formData.role === "etudiant") {
-        console.log("Le role est :", formData.role);
+        console.log("Le rôle est :", formData.role);
         navigate("/dashboard-etudiant");
       } else {
         navigate("/dashboard-prof");
@@ -124,6 +128,32 @@ function Register() {
                 name="password"
                 placeholder="Mot de passe"
                 value={formData.password}
+                onChange={handleChange}
+                className="form-input"
+                required
+              />
+            </div>
+
+            {/* Champ pour la classe */}
+            <div className="form-group">
+              <input
+                type="text"
+                name="classe"
+                placeholder="Classe"
+                value={formData.classe}
+                onChange={handleChange}
+                className="form-input"
+                required
+              />
+            </div>
+
+            {/* Champ pour la filière */}
+            <div className="form-group">
+              <input
+                type="text"
+                name="filiere"
+                placeholder="Filière"
+                value={formData.filiere}
                 onChange={handleChange}
                 className="form-input"
                 required

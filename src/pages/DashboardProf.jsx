@@ -1,99 +1,91 @@
-import { useState } from "react";
-import { Link,useNavigate } from "react-router-dom";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
-
+import { useNavigate } from "react-router-dom";
+import { FaHome, FaChalkboardTeacher, FaBook, FaChartBar, FaSignOutAlt } from "react-icons/fa";
 import "../styles/dashboardProf.css";
 
 const DashboardProf = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const data = [
-    { name: "Alice", moyenne: 14 },
-    { name: "Bob", moyenne: 16 },
-    { name: "Charlie", moyenne: 12 },
-    { name: "David", moyenne: 18 },
-  ];
-
-  const [etudiants] = useState([
-    { id: 1, nom: "Alice", progression: "Bon", status: "Actif" },
-    { id: 2, nom: "Bob", progression: "Excellent", status: "Actif" },
-    { id: 3, nom: "Charlie", progression: "Moyen", status: "Inactif" },
-    { id: 4, nom: "David", progression: "Très bon", status: "Actif" },
-  ]);
 
   const handleLogout = async () => {
     try {
       console.log("Déconnexion en cours...");
-      await signOut();
-      setUser(null); // 🔹 Déconnecte l'utilisateur localement
       console.log("Déconnexion réussie !");
-      navigate("/"); // 🔹 Redirige immédiatement
+      navigate("/"); // Redirige vers la page d'accueil
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error.message);
     }
   };
 
   return (
-    <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <h2 className="sidebar-title">Dashboard Professeur</h2>
-        <ul className="sidebar-menu">
-          <li><Link to="/" className="sidebar-link">🏠 Accueil</Link></li>
-          <li><Link to="/create-exercise" className="sidebar-link">✏️ Créer un Exercice</Link></li>
-          <li><Link to="/exercices" className="sidebar-link">📚 Exercices</Link></li>
-          <li><Link to="/stats" className="sidebar-link">📊 Performances des Etudiants</Link></li>
-          <li>
-            <button onClick={handleLogout} className="sidebar-link logout">
-              🚪 Déconnexion
-            </button>
-          </li>
-        </ul>
-      </aside>
+    <div
+      className="dashboard-container min-h-screen flex flex-col bg-cover bg-center"
+      style={{
+        backgroundImage: "url('/images/prof.png')",
+        backgroundSize: "cover", // Assure que l'image couvre toute la page
+        backgroundPosition: "center 30%", // Descend l'image pour qu'elle cadre bien
+        backgroundRepeat: "no-repeat", // Empêche la répétition de l'image
+      }}
+    >
+      {/* Entête */}
+      <header className="bg-transparent text-gray-800 py-4 px-8 flex justify-between items-center shadow-md">
+        <h1 className="text-3xl font-bold">Plateforme SGBD</h1>
+      </header>
 
       {/* Contenu principal */}
-      <main className="main-content">
-        <h1 className="welcome-text">Bienvenue, Professeur ! 👨‍🏫</h1>
+      <main className="flex-grow flex flex-col items-center justify-center">
+        <h1 className="text-4xl font-bold text-gray-800 mb-10">Tableau de Bord Professeur</h1>
 
-        {/* Graphique des performances */}
-        <section className="card">
-          <h2 className="card-title">📊 Performances des Étudiants</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="moyenne" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </section>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+          {/* Accueil */}
+          <div
+            className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition"
+            onClick={() => navigate("/")}
+          >
+            <FaHome className="text-6xl text-blue-500 mb-4" />
+            <p className="text-lg font-semibold text-gray-700">Accueil</p>
+          </div>
 
-        {/* Tableau des étudiants */}
-        <section className="card">
-          <h2 className="card-title">👨‍🎓 Liste des Étudiants</h2>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Progression</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {etudiants.map((etudiant) => (
-                <tr key={etudiant.id}>
-                  <td>{etudiant.nom}</td>
-                  <td>{etudiant.progression}</td>
-                  <td className={etudiant.status === "Actif" ? "text-green" : "text-red"}>
-                    {etudiant.status}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
+          {/* Créer un exercice */}
+          <div
+            className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition"
+            onClick={() => navigate("/create-exercise")}
+          >
+            <FaChalkboardTeacher className="text-6xl text-orange-500 mb-4" />
+            <p className="text-lg font-semibold text-gray-700">Créer un Exercice</p>
+          </div>
+
+          {/* Exercices */}
+          <div
+            className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition"
+            onClick={() => navigate("/exercices")}
+          >
+            <FaBook className="text-6xl text-green-500 mb-4" />
+            <p className="text-lg font-semibold text-gray-700">Exercices</p>
+          </div>
+
+          {/* Exercices Soumis */}
+          <div
+            className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition"
+            onClick={() => navigate("/exercices-soumis")} // Mise à jour pour rediriger vers la nouvelle page
+          >
+            <FaChartBar className="text-6xl text-purple-500 mb-4" />
+            <p className="text-lg font-semibold text-gray-700">Exercices Soumis</p>
+          </div>
+
+          {/* Déconnexion */}
+          <div
+            className="flex flex-col items-center justify-center bg-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition"
+            onClick={handleLogout}
+          >
+            <FaSignOutAlt className="text-6xl text-red-500 mb-4" />
+            <p className="text-lg font-semibold text-gray-700">Déconnexion</p>
+          </div>
+        </div>
       </main>
+
+      {/* Pied de page */}
+      <footer className="bg-transparent text-gray-800 py-4 text-center shadow-md">
+        <p className="text-lg font-semibold">© 2025 Plateforme SGBD. Tous droits réservés.</p>
+      </footer>
     </div>
   );
 };

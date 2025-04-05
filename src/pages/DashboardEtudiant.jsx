@@ -1,81 +1,104 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaSearch, FaFileAlt } from "react-icons/fa";
 
 const DashboardEtudiant = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  // Données du graphique
-  const data = [
-    { name: "Exo 1", note: 14 },
-    { name: "Exo 2", note: 16 },
-    { name: "Exo 3", note: 12 },
-    { name: "Exo 4", note: 18 },
-  ];
 
-  // Liste des exercices
-  const [exercices] = useState([
-    { id: 1, titre: "Exercice SQL SELECT", status: "Terminé" },
-    { id: 2, titre: "Exercice Jointures", status: "En cours" },
-    { id: 3, titre: "Exercice Normalisation", status: "Non commencé" },
-  ]);
+  // Liste des exercices (initialement vide)
+  const [exercises, setExercises] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handleLogout = async () => {
-    try {
-      console.log("Déconnexion en cours...");
-      await signOut();
-      setUser(null);
-      console.log("Déconnexion réussie !");
-      navigate("/");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion :", error.message);
-    }
-  };
+  // Récupérer les exercices depuis l'API
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const response = await fetch("/api/exercises"); // Remplacez par l'URL de votre API
+        const data = await response.json();
+        setExercises(data); // Met à jour la liste des exercices
+      } catch (error) {
+        console.error("Erreur lors de la récupération des exercices :", error);
+      }
+    };
+
+    fetchExercises();
+  }, []); // Le tableau vide [] signifie que l'effet s'exécute une seule fois au chargement
+
+  // Filtrer les exercices en fonction de la recherche
+  const filteredExercises = exercises.filter((exercise) =>
+    exercise.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <div className="w-64 bg-blue-700 text-white p-5 fixed h-full">
-        <h2 className="text-xl font-bold mb-5">Tableau de bord Étudiant</h2>
-        <ul className="space-y-3">
-          <li>
-            <Link to="/" className="block bg-blue-600 hover:bg-blue-500 p-3 rounded-lg shadow-md hover:shadow-lg transition transform hover:-translate-y-1">
-              🏠 Accueil
-            </Link>
-          </li>
-          <li>
-            <button onClick={handleLogout} className="sidebar-link logout">
-              🚪 Déconnexion
-            </button>
-          </li>
-        </ul>
-      </div>
+    <div
+      className="min-h-screen flex flex-col bg-cover bg-center"
+      style={{
+        backgroundImage: "url('/images/etudiant.png')", // Chemin de l'image d'arrière-plan
+        backgroundSize: "cover", // L'image couvre toute la zone
+        backgroundPosition: "center", // Centre l'image
+        backgroundRepeat: "no-repeat", // Empêche la répétition de l'image
+      }}
+    >
+      {/* Entête */}
+      <header className="bg-transparent text-white py-4 px-8 flex justify-between items-center shadow-md">
+        <h1 className="text-3xl font-bold">Plateforme SGBD</h1>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+        >
+          Accueil
+        </button>
+      </header>
 
-      {/* Contenu principal */}
-      <div className="flex-1 ml-64 p-6 bg-gray-50 overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-6">Bienvenue, Étudiant ! 👋</h1>
-
-        {/* Graphique des performances */}
-        <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">📊 Progression des Notes</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="note" stroke="#3b82f6" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+      {/* Barre de recherche */}
+      <div className="flex justify-center mt-6">
+        <div className="relative w-2/3 max-w-lg">
+          <input
+            type="text"
+            placeholder="Rechercher un exercice..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 text-gray-800"
+          />
+          <FaSearch className="absolute top-4 left-4 text-gray-400 text-xl" />
         </div>
       </div>
+
+      {/* Vue d'ensemble des exercices */}
+      <main className="flex-grow flex flex-col items-center justify-center mt-10">
+        <div className="bg-white/10 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full">
+          <h2 className="text-4xl font-extrabold text-gray-100 mb-6 text-center">
+            Vue d'ensemble des Exercices
+          </h2>
+
+          {/* Liste des exercices */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredExercises.map((exercise) => (
+              <div
+                key={exercise.id}
+                className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
+              >
+                <FaFileAlt className="text-6xl text-blue-500 mb-4" />
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{exercise.title}</h3>
+                <p className="text-gray-600 text-center mb-4">
+                  {exercise.description.substring(0, 50)}...
+                </p>
+                <button
+                  onClick={() => navigate(`/exercice/${exercise.id}`)}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+                >
+                  Voir les détails
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Pied de page */}
+      <footer className="bg-transparent text-white py-4 text-center shadow-md">
+        <p className="text-lg font-semibold">© 2025 Plateforme SGBD. Tous droits réservés.</p>
+      </footer>
     </div>
   );
 };

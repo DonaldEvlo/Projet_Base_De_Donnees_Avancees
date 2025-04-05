@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
-const backgroundImage = '/images/background.jpg';
+const backgroundImage = '/images/student-image.png';
 
 const Home = () => {
   return (
