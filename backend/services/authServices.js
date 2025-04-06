@@ -478,4 +478,4 @@ export const listenToAuthChanges = (callback) => {
   // Retourner l'objet avec unsubscribe
   return listener.subscription.unsubscribe;
 };
-
+export const updateEtudiantProfile = () =>{};
