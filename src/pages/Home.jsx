@@ -1,13 +1,36 @@
 import { Link } from "react-router-dom";
 import "../styles/home.css";
-const backgroundImage = '/images/student-image.png';
+import { useState } from "react";
 
 const Home = () => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      console.log("Mode sombre :", !prev);
+      return !prev;
+    });
+  };
+
   return (
-    <div className="home-container">
+    <div
+      className={`home-container ${darkMode ? "dark" : ""}`}
+      style={{
+        backgroundImage: "url('/images/student-image.png')", // Déplacé ici pour tester
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       {/* Navbar minimaliste */}
       <nav className="navbar">
         <div className="navbar-brand">Plateforme SGBD</div>
+        <button
+          onClick={toggleDarkMode}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+        >
+          {darkMode ? "Mode Clair" : "Mode Sombre"}
+        </button>
       </nav>
 
       {/* Contenu principal centré */}

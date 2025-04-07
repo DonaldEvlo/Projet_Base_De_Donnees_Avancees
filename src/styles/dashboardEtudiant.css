@@ -1,9 +1,24 @@
-/* Styles pour le Dashboard Étudiant */
-.dashboard-container {
-  @apply flex h-screen;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* S'assurer que tout prend la pleine hauteur */
+html, body, #root {
+  @apply h-full m-0;
 }
 
-/* Sidebar */
+/* Conteneur principal */
+.dashboard-container {
+  @apply flex w-full min-h-screen;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Pas de changement de fond ici, l'image reste via style inline */
+/* .dark .dashboard-container {
+  @apply bg-gray-900; // Supprimé pour garder l'image
+} */
+
+/* Sidebar (non utilisée ici, mais conservée) */
 .sidebar {
   @apply w-64 bg-blue-700 text-white p-5;
 }
@@ -26,7 +41,7 @@
 
 /* Contenu principal */
 .main-content {
-  @apply flex-1 p-6 bg-gray-100;
+  @apply flex-1 p-6 bg-gray-100 dark:bg-transparent; /* Transparent en mode sombre pour voir l'image */
 }
 
 .welcome-text {
@@ -36,6 +51,10 @@
 /* Cartes */
 .card {
   @apply bg-white p-6 rounded-lg shadow-lg mb-6;
+}
+
+.dark .card {
+  @apply bg-gray-800 text-white;
 }
 
 .card-title {

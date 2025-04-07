@@ -4,29 +4,32 @@
 
 /* S'assurer que tout prend la pleine hauteur */
 html, body, #root {
-  @apply h-full m-0; /* Assurez-vous qu'il n'y ait pas de marges par défaut */
+  @apply h-full m-0;
 }
 
 /* Conteneur principal */
 .dashboard-container {
   @apply flex w-full min-h-screen;
-  background-image: url('../images/prof.png'); /* Chemin vers l'image */
-  background-size: cover; /* L'image couvre tout l'écran */
-  background-position: center; /* Centrer l'image */
-  background-repeat: no-repeat; /* Pas de répétition */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Sidebar */
+/* Pas de changement de fond ici, l'image reste via style inline */
+/* .dark .dashboard-container {
+  @apply bg-gray-900; // Supprimé pour garder l'image
+} */
+
+/* Sidebar (non utilisée ici, conservée pour cohérence) */
 .sidebar {
   @apply w-64 bg-blue-700 text-white p-5 flex flex-col;
 }
 
-/* Titre de la sidebar */
 .sidebar-title {
   @apply text-xl font-bold mb-5;
 }
 
-/* Menu de la sidebar */
 .sidebar-menu {
   @apply space-y-3;
 }
@@ -46,7 +49,7 @@ html, body, #root {
 
 /* Contenu principal */
 .main-content {
-  @apply flex-1 p-6 w-full px-0; /* Assurez-vous que le contenu principal occupe toute la largeur */
+  @apply flex-1 p-6 w-full px-0;
 }
 
 /* Texte de bienvenue */
@@ -54,9 +57,13 @@ html, body, #root {
   @apply text-3xl font-bold mb-6;
 }
 
-/* Cartes (Graphiques et tableaux) */
+/* Cartes */
 .card {
-  @apply bg-white p-6 rounded-lg shadow-lg mb-6 w-full; /* Cartes prennent toute la largeur */
+  @apply bg-white p-6 rounded-lg shadow-lg mb-6 w-full;
+}
+
+.dark .card {
+  @apply bg-gray-800 text-white;
 }
 
 .card-title {
@@ -65,15 +72,23 @@ html, body, #root {
 
 /* Tableau */
 .table {
-  @apply w-full border-collapse; /* Tableau prend toute la largeur */
+  @apply w-full border-collapse;
 }
 
 .table thead {
   @apply bg-gray-200;
 }
 
+.dark .table thead {
+  @apply bg-gray-700;
+}
+
 .table th, .table td {
   @apply p-3 text-left border-b;
+}
+
+.dark .table th, .dark .table td {
+  @apply border-gray-600;
 }
 
 /* Statut des étudiants */

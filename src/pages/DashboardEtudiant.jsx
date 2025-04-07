@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { FaFileAlt, FaSearch } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import "../styles/dashboardEtudiant.css";
 
 const DashboardEtudiant = () => {
   const navigate = useNavigate();
-
   const [exercises, setExercises] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Récupération des exercices
   useEffect(() => {
     const fetchExercises = async () => {
       try {
@@ -40,26 +40,41 @@ const DashboardEtudiant = () => {
     navigate("/");
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => {
+      console.log("Mode sombre :", !prev);
+      return !prev;
+    });
+  };
+
   if (loading) {
-    return <p className="text-white text-center mt-10 text-lg">Chargement des exercices...</p>;
+    return (
+      <p className="text-center mt-10 text-lg text-gray-800 dark:text-white">
+        Chargement des exercices...
+      </p>
+    );
   }
 
   if (error) {
-    return <p className="text-red-500 text-center mt-10">Erreur : {error}</p>;
+    return (
+      <p className="text-red-500 text-center mt-10">
+        Erreur : {error}
+      </p>
+    );
   }
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-cover bg-center"
+      className={`min-h-screen flex flex-col bg-cover bg-center ${darkMode ? "dark" : ""}`}
       style={{
-        backgroundImage: "url('/images/etudiant.png')",
+        backgroundImage: "url('/images/etudiant.png')", // Image toujours présente
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
       {/* Entête */}
-      <header className="bg-transparent text-white py-4 px-8 flex justify-between items-center shadow-md">
+      <header className="bg-transparent text-white dark:text-white py-4 px-8 flex justify-between items-center shadow-md">
         <h1 className="text-3xl font-bold">Plateforme SGBD</h1>
         <div className="flex gap-4">
           <button
@@ -67,6 +82,12 @@ const DashboardEtudiant = () => {
             className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
           >
             Accueil
+          </button>
+          <button
+            onClick={toggleDarkMode}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
+          >
+            {darkMode ? "Mode Clair" : "Mode Sombre"}
           </button>
           <button
             onClick={handleLogout}
@@ -85,16 +106,16 @@ const DashboardEtudiant = () => {
             placeholder="Rechercher un exercice..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 text-gray-800"
+            className="w-full border border-gray-300 rounded-lg p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-800/80 dark:text-white dark:border-gray-600"
           />
-          <FaSearch className="absolute top-4 left-4 text-gray-400 text-xl" />
+          <FaSearch className="absolute top-4 left-4 text-gray-400 dark:text-gray-300 text-xl" />
         </div>
       </div>
 
       {/* Vue d'ensemble des exercices */}
       <main className="flex-grow flex flex-col items-center justify-center mt-10">
-        <div className="bg-white/10 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-6xl w-full">
-          <h2 className="text-4xl font-extrabold text-gray-100 mb-6 text-center">
+        <div className="bg-white/10 dark:bg-gray-900/70 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-6xl w-full">
+          <h2 className="text-4xl font-extrabold text-gray-100 dark:text-white mb-6 text-center">
             Vue d'ensemble des Exercices
           </h2>
 
@@ -103,17 +124,17 @@ const DashboardEtudiant = () => {
             {filteredExercises.map((exercise) => (
               <div
                 key={exercise.id}
-                className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
+                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
               >
                 <FaFileAlt className="text-6xl text-blue-500 mb-4" />
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
                   {exercise.id}
                 </h3>
-                <p className="text-gray-600 text-center mb-2">
+                <p className="text-gray-600 dark:text-gray-300 text-center mb-2">
                   <strong>Commentaire :</strong>{" "}
                   {exercise.commentaire ? exercise.commentaire.slice(0, 50) + "..." : "Aucun"}
                 </p>
-                <p className="text-gray-600 text-center mb-4">
+                <p className="text-gray-600 dark:text-gray-300 text-center mb-4">
                   <strong>Date limite :</strong>{" "}
                   {new Date(exercise.date_limite).toLocaleDateString()}
                 </p>
@@ -130,7 +151,7 @@ const DashboardEtudiant = () => {
       </main>
 
       {/* Pied de page */}
-      <footer className="bg-transparent text-white py-4 text-center shadow-md">
+      <footer className="bg-transparent text-white dark:text-white py-4 text-center shadow-md">
         <p className="text-lg font-semibold">© 2025 Plateforme SGBD. Tous droits réservés.</p>
       </footer>
     </div>
