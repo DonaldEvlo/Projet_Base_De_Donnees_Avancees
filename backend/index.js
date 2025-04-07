@@ -102,7 +102,9 @@ app.post('/exercices', upload.single('pdf'), async (req, res) => {
 
 //   const fileName = `exercice_${Date.now()}.pdf`;
 const fileName = `${file.originalname}`;
-const filePath = `${professeur_id}/${fileName}`; // Chemin sous-dossier utilisateur
+const filePath = `${professeur_id}/${fileName}`;
+console.log("le path ",filePath)
+// Chemin sous-dossier utilisateur
 console.log("le prof est : ", professeur_id)
   // Upload vers Supabase Storage
   const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file.buffer, {

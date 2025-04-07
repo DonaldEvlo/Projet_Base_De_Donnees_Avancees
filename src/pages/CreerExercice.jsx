@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaCalendarAlt, FaCommentDots, FaFileAlt, FaPen } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import supabase from "../../supabaseClient"; // Assurez-vous que vous avez initialisé supabase
 
 const CreerExercice = () => {
   const [title, setTitle] = useState("");
@@ -12,9 +13,27 @@ const CreerExercice = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // À remplacer par un vrai contexte/auth plus tard
-    const currentProfesseurId = "47d74aee-bed1-41a8-a516-ead864bf66bc";
-    setProfesseurId(currentProfesseurId);
+    // Récupérer l'ID de l'utilisateur connecté avec Supabase
+    const getUserId = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error) {
+        console.log("Erreur lors de la récupération de l'utilisateur :", error);
+        setMessage("Utilisateur non authentifié.");
+        return;
+      }
+
+      const user = data.user;
+      console.log("L'utilisateur est : ", user);
+
+      if (user) {
+        setProfesseurId(user.id);  // Remplace l'ID statique par l'ID de l'utilisateur connecté
+      } else {
+        setMessage("Utilisateur non authentifié.");
+      }
+    };
+
+    getUserId();
   }, []);
 
   const handleSubmit = async (e) => {
