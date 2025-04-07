@@ -479,3 +479,5 @@ export const listenToAuthChanges = (callback) => {
   return listener.subscription.unsubscribe;
 };
 
+export const updateEtudiantProfile = () =>{};
+

@@ -1,18 +1,18 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
+import ChooseRole from "../../src/pages/choisirRole";
 import CreerExercice from "../../src/pages/CreerExercice";
 import DashboardEtudiant from "../../src/pages/DashboardEtudiant";
 import DashboardProf from "../../src/pages/DashboardProf";
-import ChooseRole from "../../src/pages/choisirRole";
+import ExerciceDetails from "../../src/pages/ExerciceDetails";
+import ExercicesSoumis from "../../src/pages/ExercicesSoumis";
 import Home from "../../src/pages/Home";
+import ListeExercices from "../../src/pages/ListeExercices";
+import ModifierExercice from "../../src/pages/ModifierExercice";
 import NotFound from "../../src/pages/notFound";
 import LoginEtudiant from "../../src/pages/signin etudiant";
 import LoginProf from "../../src/pages/signin prof";
 import Register from "../../src/pages/signup";
-import ExerciceDetails from "../../src/pages/ExerciceDetails";
-import ModifierExercice from "../../src/pages/ModifierExercice";
-import ListeExercices from "../../src/pages/ListeExercices";
-import ExercicesSoumis from "../../src/pages/ExercicesSoumis";
     const AppRoutes = () =>{
         return(
             <Routes>

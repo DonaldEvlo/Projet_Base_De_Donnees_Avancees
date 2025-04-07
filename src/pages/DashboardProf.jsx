@@ -1,5 +1,5 @@
+import { FaBook, FaChalkboardTeacher, FaChartBar, FaHome, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { FaHome, FaChalkboardTeacher, FaBook, FaChartBar, FaSignOutAlt } from "react-icons/fa";
 import "../styles/dashboardProf.css";
 
 const DashboardProf = () => {
