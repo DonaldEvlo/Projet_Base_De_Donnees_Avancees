@@ -390,7 +390,71 @@ app.put('/exercices/:id', upload.single('pdf'), async (req, res) => {
 
 
 
+//Récupérer les rapports soumis par un étudiant
+app.get("/exercices/:exerciseId/soumissions", async (req, res) => {
+  const { exerciseId } = req.params;
 
+  try {
+    console.log("ID d'exercice reçu :", exerciseId);
+    // Requête Supabase pour récupérer les soumissions d'un exercice
+    const { data, error } = await supabase
+      .from('soumissions')  // Assure-toi que le nom de la table est correct
+      .select('*')  // Sélectionne toutes les colonnes
+      .eq('exercice_id', exerciseId);  // Filtrer les soumissions par ID d'exercice
+    console.log("Données récupérées :", data.length);
+    if (error) {
+      console.error("Erreur Supabase:", error);
+      return res.status(500).json({ message: "Erreur serveur lors de la récupération des soumissions." });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(200).json({ message: "Aucune soumission trouvée pour cet exercice." });
+    }
+
+    // Répondre avec les soumissions
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("Erreur dans la requête :", err);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+});
+
+
+app.post("/:submissionId/noter", async (req, res) => {
+  const { submissionId } = req.params;
+  const { grade,exerciseId } = req.body;
+
+  console.log("ID de soumission reçu :", submissionId);
+  console.log("Note reçue :", grade);
+  console.log("ID d'exercice reçu :", exerciseId);
+
+  if (!grade) {
+    return res.status(400).json({ message: "La note est requise." });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("notes")
+      .insert({ note_professeur: grade, note_ia : grade , soumission_id : submissionId , exercice_id : exerciseId})
+      ;
+
+    console.log("Données insérées :", data);
+
+    if (error) {
+      console.error("Erreur Supabase:", error);
+      return res.status(500).json({ message: "Erreur lors de la mise à jour de la note." });
+    }
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: "Soumission non trouvée." });
+    }
+
+    res.status(200).json({ message: "Note ajoutée avec succès", soumission: data[0] });
+  } catch (err) {
+    console.error("Erreur serveur:", err);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+});
 
 
 app.listen(port, () => {

@@ -4,21 +4,23 @@ import { Link } from "react-router-dom";
 import supabase from "../../supabaseClient"; // Assure-toi que le chemin est bon
 
 const ExercicesSoumis = () => {
-  const [submissions, setSubmissions] = useState([]); // Liste des soumissions
+  const [exercises, setExercises] = useState([]); // Liste des exercices
+  const [selectedExercise, setSelectedExercise] = useState(null); // Exercice sélectionné
+  const [submissions, setSubmissions] = useState([]); // Liste des soumissions pour un exercice
   const [selectedSubmission, setSelectedSubmission] = useState(null); // Soumission sélectionnée
   const [grade, setGrade] = useState(""); // Note attribuée
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Récupérer les soumissions depuis l'API
+  // Récupérer les exercices depuis l'API
   useEffect(() => {
-    const fetchUserAndExercices = async () => {
+    const fetchUserAndExercises = async () => {
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
           throw new Error("Utilisateur non authentifié.");
         }
-
+        
         const token = sessionData.session.access_token;
         console.log("Token récupéré côté client:", token);
 
@@ -34,7 +36,7 @@ const ExercicesSoumis = () => {
         }
 
         const data = await response.json();
-        setSubmissions(data);
+        setExercises(data);
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -43,22 +45,70 @@ const ExercicesSoumis = () => {
       }
     };
 
-    fetchUserAndExercices();
+    fetchUserAndExercises();
   }, []);
 
+  // Récupérer les soumissions pour un exercice spécifique
+  const fetchSubmissions = async (exerciseId) => {
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        throw new Error("Utilisateur non authentifié.");
+      }
+
+      const token = sessionData.session.access_token;
+
+      const response = await fetch(`http://localhost:5000/exercices/${exerciseId}/soumissions`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      console.log("Token récupéré côté client:", response);
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des soumissions.");
+      }
+
+      const data = await response.json();
+
+      // Vérifie si la réponse contient un message spécifique ou si la liste est vide
+      if (data.message === "Aucune soumission trouvée pour cet exercice." || data.length === 0) {
+        setSubmissions([]);  // Aucun soumission, on vide le tableau
+        setError("Aucune soumission trouvée pour cet exercice.");  // Affiche un message d'erreur personnalisé
+        return;  // On arrête ici, car il n'y a pas de soumissions à afficher
+      }
+
+      setSubmissions(data);  // Si il y a des soumissions, on les charge
+    } catch (err) {
+      console.error(err);
+      setError(err.message);  // Affiche l'erreur (ou un message d'erreur général)
+    }
+  };
+
   // Soumettre la note
-  const handleGradeSubmit = async (submissionId) => {
+  const handleGradeSubmit = async (submissionId, exerciseId) => {
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const response = await fetch(`http://localhost:5000/soumissions/${submissionId}/noter`, {
+      // Vérifier si la note est présente
+      if (!grade) {
+        alert("Veuillez entrer une note.");
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/${submissionId}/noter`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ grade }),
+        body: JSON.stringify({
+          grade,
+          exerciseId, // Ajouter l'ID de l'exercice à l'API
+        }),
       });
 
       if (!response.ok) throw new Error("Erreur lors de l'envoi de la note.");
@@ -106,30 +156,33 @@ const ExercicesSoumis = () => {
             Liste des Exercices Soumis
           </h2>
 
-          {submissions.length === 0 ? (
+          {exercises.length === 0 ? (
             <p className="text-gray-300 text-center">
-              Aucune soumission disponible.
+              Aucun exercice disponible.
             </p>
           ) : (
             <div className="space-y-4">
-              {submissions.map((submission) => (
+              {exercises.map((exercise) => (
                 <div
-                  key={submission.id}
+                  key={exercise.id}
                   className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
                 >
                   <div>
                     <p className="text-lg font-bold text-gray-800">
-                      Étudiant : {submission.studentName ?? "Inconnu"}
+                      Exercice : {exercise.title ?? "Sans titre"}
                     </p>
                     <p className="text-gray-600">
-                      Titre : {submission.exerciseTitle ?? "Sans titre"}
+                      Description : {exercise.description ?? "Aucune description"}
                     </p>
                   </div>
                   <button
-                    onClick={() => setSelectedSubmission(submission)}
+                    onClick={() => {
+                      setSelectedExercise(exercise);
+                      fetchSubmissions(exercise.id);
+                    }}
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
                   >
-                    Visualiser
+                    Voir les soumissions
                   </button>
                 </div>
               ))}
@@ -137,7 +190,43 @@ const ExercicesSoumis = () => {
           )}
         </div>
 
-        {/* Visualisation d'une soumission */}
+        {/* Afficher les soumissions de l'exercice sélectionné */}
+        {selectedExercise && (
+          <div className="bg-white/90 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-3xl w-full mt-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              Soumissions pour l'exercice "{selectedExercise.title}"
+            </h3>
+
+            {submissions.length === 0 ? (
+              <p className="text-gray-300 text-center">
+                Aucune soumission pour cet exercice.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {submissions.map((submission) => (
+                  <div
+                    key={submission.id}
+                    className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="text-lg font-bold text-gray-800">
+                        Étudiant : {submission.studentName ?? "Inconnu"}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setSelectedSubmission(submission)}
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
+                    >
+                      Noter
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Visualisation et notation de la soumission */}
         {selectedSubmission && (
           <div className="bg-white/90 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-3xl w-full mt-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-4">
@@ -150,7 +239,7 @@ const ExercicesSoumis = () => {
               <strong>Description :</strong> {selectedSubmission.description}
             </p>
             <a
-              href={selectedSubmission.fileUrl}
+              href={selectedSubmission.fichier_reponse}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 underline"
@@ -171,7 +260,7 @@ const ExercicesSoumis = () => {
                 placeholder="Entrez une note"
               />
               <button
-                onClick={() => handleGradeSubmit(selectedSubmission.id)}
+                onClick={() => handleGradeSubmit(selectedSubmission.id, selectedExercise.id)}
                 className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition mt-4"
               >
                 Soumettre la note
