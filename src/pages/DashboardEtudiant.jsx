@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FaFileAlt, FaSearch } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/dashboardEtudiant.css";
 
 const DashboardEtudiant = () => {
   const navigate = useNavigate();
@@ -15,11 +14,8 @@ const DashboardEtudiant = () => {
     const fetchExercises = async () => {
       try {
         const response = await fetch("http://localhost:5000/exercices");
-        if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des exercices");
-        }
+        if (!response.ok) throw new Error("Erreur lors de la récupération des exercices");
         const data = await response.json();
-        console.log("Données récupérées :", data);
         setExercises(data);
       } catch (err) {
         setError(err.message);
@@ -27,7 +23,6 @@ const DashboardEtudiant = () => {
         setLoading(false);
       }
     };
-
     fetchExercises();
   }, []);
 
@@ -36,124 +31,123 @@ const DashboardEtudiant = () => {
   );
 
   const handleLogout = () => {
-    console.log("Déconnexion...");
     navigate("/");
   };
 
   const toggleDarkMode = () => {
-    setDarkMode((prev) => {
-      console.log("Mode sombre :", !prev);
-      return !prev;
-    });
+    setDarkMode((prev) => !prev);
   };
-
-  if (loading) {
-    return (
-      <p className="text-center mt-10 text-lg text-gray-800 dark:text-white">
-        Chargement des exercices...
-      </p>
-    );
-  }
-
-  if (error) {
-    return (
-      <p className="text-red-500 text-center mt-10">
-        Erreur : {error}
-      </p>
-    );
-  }
 
   return (
     <div
-      className={`min-h-screen flex flex-col bg-cover bg-center ${darkMode ? "dark" : ""}`}
+      className={`${darkMode ? "dark" : ""} relative`}
       style={{
-        backgroundImage: "url('/images/etudiant.png')", // Image toujours présente
+        backgroundImage: `url("/images/etudiant.png")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Entête */}
-      <header className="bg-transparent text-white dark:text-white py-4 px-8 flex justify-between items-center shadow-md">
-        <h1 className="text-3xl font-bold">Plateforme SGBD</h1>
-        <div className="flex gap-4">
-          <button
-            onClick={() => navigate("/")}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-          >
-            Accueil
-          </button>
-          <button
-            onClick={toggleDarkMode}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-          >
-            {darkMode ? "Mode Clair" : "Mode Sombre"}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-          >
-            Déconnexion
-          </button>
-        </div>
-      </header>
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/50 z-0" />
 
-      {/* Barre de recherche */}
-      <div className="flex justify-center mt-6">
-        <div className="relative w-2/3 max-w-lg">
-          <input
-            type="text"
-            placeholder="Rechercher un exercice..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-4 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-800/80 dark:text-white dark:border-gray-600"
-          />
-          <FaSearch className="absolute top-4 left-4 text-gray-400 dark:text-gray-300 text-xl" />
-        </div>
-      </div>
+      {/* Contenu principal */}
+      <div className="relative z-10 min-h-screen flex flex-col bg-gray-100/70 dark:bg-gray-900/70 transition-colors duration-500">
+        {/* Header */}
+        <header className="bg-white/30 dark:bg-black/40 backdrop-blur-lg py-5 px-8 shadow-md flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">📘 Plateforme SGBD</h1>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition"
+            >
+              Accueil
+            </button>
+            <button
+              onClick={toggleDarkMode}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition"
+            >
+              {darkMode ? "☀️ Mode Clair" : "🌙 Mode Sombre"}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold transition"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </header>
 
-      {/* Vue d'ensemble des exercices */}
-      <main className="flex-grow flex flex-col items-center justify-center mt-10">
-        <div className="bg-white/10 dark:bg-gray-900/70 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-6xl w-full">
-          <h2 className="text-4xl font-extrabold text-gray-100 dark:text-white mb-6 text-center">
-            Vue d'ensemble des Exercices
-          </h2>
-
-          {/* Liste des exercices */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredExercises.map((exercise) => (
-              <div
-                key={exercise.id}
-                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
-              >
-                <FaFileAlt className="text-6xl text-blue-500 mb-4" />
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                  {exercise.id}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-center mb-2">
-                  <strong>Commentaire :</strong>{" "}
-                  {exercise.commentaire ? exercise.commentaire.slice(0, 50) + "..." : "Aucun"}
-                </p>
-                <p className="text-gray-600 dark:text-gray-300 text-center mb-4">
-                  <strong>Date limite :</strong>{" "}
-                  {new Date(exercise.date_limite).toLocaleDateString()}
-                </p>
-                <Link
-                  to={`/exercice/${exercise.id}`}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition"
-                >
-                  Voir les détails
-                </Link>
-              </div>
-            ))}
+        {/* Search bar */}
+        <div className="flex justify-center mt-8">
+          <div className="relative w-4/5 max-w-xl">
+            <input
+              type="text"
+              placeholder="Rechercher un exercice..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            />
+            <FaSearch className="absolute top-3.5 left-4 text-gray-400 dark:text-gray-300 text-lg" />
           </div>
         </div>
-      </main>
 
-      {/* Pied de page */}
-      <footer className="bg-transparent text-white dark:text-white py-4 text-center shadow-md">
-        <p className="text-lg font-semibold">© 2025 Plateforme SGBD. Tous droits réservés.</p>
-      </footer>
+        {/* Loading / Error */}
+        {loading && (
+          <p className="text-center text-lg text-gray-700 dark:text-gray-300 mt-12">
+            Chargement des exercices...
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-red-500 dark:text-red-400 mt-12">Erreur : {error}</p>
+        )}
+
+        {/* Main */}
+        {!loading && !error && (
+          <main className="flex-grow flex flex-col items-center mt-12 px-4">
+            <div className="bg-white/70 dark:bg-gray-800/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-7xl">
+              <h2 className="text-4xl font-bold text-center mb-8 text-gray-800 dark:text-white">
+                📂 Vue d'ensemble des Exercices
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredExercises.map((exercise) => (
+                  <div
+                    key={exercise.id}
+                    className="bg-white dark:bg-gray-700 rounded-xl p-6 shadow-md hover:shadow-lg transition duration-300 flex flex-col justify-between"
+                  >
+                    <div className="flex flex-col items-center mb-4">
+                      <FaFileAlt className="text-5xl text-blue-500 mb-2" />
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                        {exercise.id}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
+                      <strong>Commentaire :</strong>{" "}
+                      {exercise.commentaire ? exercise.commentaire.slice(0, 60) + "..." : "Aucun"}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                      <strong>Date limite :</strong>{" "}
+                      {new Date(exercise.date_limite).toLocaleDateString()}
+                    </p>
+                    <Link
+                      to={`/exercice/${exercise.id}`}
+                      className="mt-auto inline-block text-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-semibold transition"
+                    >
+                      Voir les détails
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+        )}
+
+        {/* Footer */}
+        <footer className="bg-black/40 dark:bg-black/60 backdrop-blur-md text-white text-center py-4 mt-12">
+          <p className="text-sm">© 2025 Plateforme SGBD. Tous droits réservés.</p>
+        </footer>
+      </div>
     </div>
   );
 };
