@@ -7,15 +7,15 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)); /* Gradient par défaut */
-  @apply text-white; /* Texte blanc en mode clair */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2)); /* Gradient léger pour mode clair */
+  @apply text-black; /* Texte noir en mode clair */
   font-family: "Roboto", sans-serif;
   transition: all 0.3s ease;
 }
 
-/* Mode sombre : ajustement du gradient */
+/* Mode sombre : gradient plus sombre et texte blanc */
 .dark .home-container {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5)); /* Gradient plus sombre */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5)); /* Gradient sombre */
   @apply text-white; /* Texte blanc en mode sombre */
 }
 
@@ -24,8 +24,16 @@
   @apply bg-black/60 p-6 backdrop-blur-md shadow-md flex justify-between items-center;
 }
 
+.dark .navbar {
+  @apply bg-black/70; /* Légèrement plus sombre en mode sombre */
+}
+
 .navbar-brand {
-  @apply text-2xl font-bold text-white;
+  @apply text-2xl font-bold text-black; /* Noir en mode clair */
+}
+
+.dark .navbar-brand {
+  @apply text-white; /* Blanc en mode sombre */
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -40,36 +48,44 @@
 }
 
 .hero-section h1 {
-  @apply text-4xl md:text-5xl font-bold mb-4 text-white;
+  @apply text-4xl md:text-5xl font-bold mb-4 text-black; /* Noir en mode clair */
+}
+
+.dark .hero-section h1 {
+  @apply text-white; /* Blanc en mode sombre */
 }
 
 .subtitle {
-  @apply text-lg md:text-xl opacity-90 max-w-xl mx-auto text-gray-200;
+  @apply text-lg md:text-xl opacity-90 max-w-xl mx-auto text-gray-800; /* Gris foncé en mode clair */
 }
 
 .dark .subtitle {
-  @apply text-gray-100;
+  @apply text-gray-200; /* Gris clair en mode sombre */
 }
 
 /* Carte d'authentification */
 .auth-card {
-  @apply bg-white/20 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-white/30 shadow-lg mb-12;
+  @apply bg-white/20 backdrop-blur-lg rounded-2xl p-8 w-full max-w-md border border-gray-300 shadow-lg mb-12 text-black; /* Plus transparent en mode clair */
 }
 
 .dark .auth-card {
-  @apply bg-gray-800/70;
+  @apply bg-gray-800/70 text-white border-white/30; /* Gris foncé en mode sombre */
 }
 
 .auth-card h2 {
-  @apply text-2xl font-bold mb-4 text-white;
+  @apply text-2xl font-bold mb-4 text-black; /* Noir en mode clair */
+}
+
+.dark .auth-card h2 {
+  @apply text-white; /* Blanc en mode sombre */
 }
 
 .auth-message {
-  @apply text-gray-200 mb-6;
+  @apply text-gray-800 mb-6; /* Gris foncé en mode clair */
 }
 
 .dark .auth-message {
-  @apply text-gray-300;
+  @apply text-gray-300; /* Gris clair en mode sombre */
 }
 
 .auth-actions {
@@ -85,11 +101,11 @@
 }
 
 .signup-btn {
-  @apply bg-transparent border-2 border-blue-700 text-blue-700 hover:bg-blue-800 hover:text-white;
+  @apply bg-transparent border-2 border-blue-700 text-blue-700 hover:bg-blue-800 hover:text-white; /* Bleu en mode clair */
 }
 
 .dark .signup-btn {
-  @apply border-white text-white hover:bg-blue-900;
+  @apply border-white text-white hover:bg-blue-900; /* Blanc en mode sombre */
 }
 
 .auth-btn:hover {
@@ -97,11 +113,11 @@
 }
 
 .auth-divider {
-  @apply my-2 opacity-70 text-white;
+  @apply my-2 opacity-70 text-gray-800; /* Gris foncé en mode clair */
 }
 
 .dark .auth-divider {
-  @apply text-gray-300;
+  @apply text-gray-300; /* Gris clair en mode sombre */
 }
 
 /* Section d'information */
@@ -110,24 +126,36 @@
 }
 
 .info-card {
-  @apply bg-white/10 backdrop-blur-md rounded-xl p-6 flex-1 border border-white/20 shadow-md text-white;
+  @apply bg-white/20 backdrop-blur-md rounded-xl p-6 flex-1 border border-gray-300 shadow-md text-black; /* Plus transparent en mode clair */
 }
 
 .dark .info-card {
-  @apply bg-gray-900/70;
+  @apply bg-gray-900/70 text-white border-white/20; /* Gris foncé en mode sombre */
 }
 
 .info-card h3 {
-  @apply text-xl font-semibold mb-2 text-white;
+  @apply text-xl font-semibold mb-2 text-black; /* Noir en mode clair */
+}
+
+.dark .info-card h3 {
+  @apply text-white; /* Blanc en mode sombre */
 }
 
 .info-card p {
-  @apply text-base opacity-90 text-white;
+  @apply text-base opacity-90 text-gray-800; /* Gris foncé en mode clair */
+}
+
+.dark .info-card p {
+  @apply text-white; /* Blanc en mode sombre */
 }
 
 /* Pied de page */
 .footer {
-  @apply text-center p-6 bg-black/60 backdrop-blur-sm text-sm opacity-80 text-white;
+  @apply text-center p-6 bg-black/60 backdrop-blur-sm text-sm opacity-80 text-black; /* Noir en mode clair */
+}
+
+.dark .footer {
+  @apply bg-black/70 text-white; /* Blanc en mode sombre */
 }
 
 /* Responsive */

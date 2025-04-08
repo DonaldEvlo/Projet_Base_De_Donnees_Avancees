@@ -16,7 +16,7 @@ const Home = () => {
     <div
       className={`home-container ${darkMode ? "dark" : ""}`}
       style={{
-        backgroundImage: "url('/images/student-image.png')", // Déplacé ici pour tester
+        backgroundImage: "url('/images/student-image.png')", // Image toujours présente
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
