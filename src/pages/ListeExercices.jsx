@@ -8,6 +8,16 @@ const ListeExercices = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode === "true";
+  });
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("darkMode", newMode);
+  };
 
   // Récupérer les exercices publiés du professeur
   useEffect(() => {
@@ -74,7 +84,7 @@ const ListeExercices = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-cover bg-center"
+      className={`${darkMode ? "dark" : ""} min-h-screen flex flex-col`}
       style={{
         backgroundImage:
           "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/prof.png')",
@@ -83,22 +93,37 @@ const ListeExercices = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
+      {/* Overlay */}
+      <div
+        className={`absolute inset-0 ${
+          darkMode ? "bg-black/60" : "bg-white/20"
+        } z-0 transition-colors duration-500`}
+      />
+
       {/* Entête */}
-      <header className="bg-black/50 text-white py-4 px-8 flex justify-between items-center shadow-md">
-        <h1 className="text-2xl font-extrabold tracking-wide uppercase">
+      <header className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md">
+        <h1 className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
           Plateforme SGBD
         </h1>
-        <button
-          onClick={() => navigate("/dashboard-prof")}
-          className="text-lg font-semibold underline hover:text-gray-300"
-        >
-          Retour
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate("/dashboard-prof")}
+            className="text-lg font-semibold underline text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            Retour
+          </button>
+          <button
+            onClick={toggleDarkMode}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition"
+          >
+            {darkMode ? "☀️ Mode Clair" : "🌙 Mode Sombre"}
+          </button>
+        </div>
       </header>
 
       {/* Contenu principal */}
-      <main className="flex-grow flex items-center justify-center py-8 px-4">
-        <div className="bg-white/10 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full">
+      <main className="relative z-10 flex-grow flex items-center justify-center py-8 px-4">
+        <div className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full">
           <h2 className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2">
             <FaTasks className="text-green-500" />
             Liste des Exercices
@@ -115,12 +140,12 @@ const ListeExercices = () => {
               {exercises.map((exercise) => (
                 <div
                   key={exercise.id}
-                  className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
+                  className="bg-white/90 dark:bg-gray-700 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center hover:shadow-xl transition"
                 >
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
                     {exercise.titre || "Exercice"}
                   </h3>
-                  <p className="text-gray-600 text-center mb-4">
+                  <p className="text-gray-600 dark:text-gray-300 text-center mb-4">
                     {exercise.commentaire?.substring(0, 60) || "Pas de description"}...
                   </p>
                   <div className="flex gap-4">
@@ -149,7 +174,7 @@ const ListeExercices = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-black/70 text-white py-4 text-center">
+      <footer className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-4 text-center">
         <p className="text-lg font-semibold">
           © 2025 Plateforme SGBD. Tous droits réservés.
         </p>
