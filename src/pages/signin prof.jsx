@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getProf,
@@ -7,17 +7,25 @@ import {
   signInWithOAuthProf,
 } from "../../backend/services/authServices";
 import "../styles/signin.css";
+// Import de Framer Motion pour les animations
+import { motion } from "framer-motion";
 
 const LoginProf = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setLoading] = useState(false);
-  const [user, setUser] = useState(null); // ✅ Ajouté ici
+  const [user, setUser] = useState(null);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     console.log("🚀 useEffect exécuté");
+    
+    // Démarrer les animations après un court délai
+    const timer = setTimeout(() => {
+      setAnimationComplete(true);
+    }, 100);
 
     const checkUser = async () => {
       try {
@@ -50,6 +58,8 @@ const LoginProf = () => {
 
     // 🔄 Écouter les changements d'authentification
     listenToAuthChanges(setUser);
+    
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   const handleLogin = async (e) => {
@@ -60,7 +70,7 @@ const LoginProf = () => {
     try {
       console.log("🔑 Tentative de connexion avec", email, password);
       
-      await signInWithEmail(email, password, true); // ✅ Assure-toi que "true" correspond à `role === "professeur"`
+      await signInWithEmail(email, password, true);
       console.log("✅ Connexion réussie !");
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -95,26 +105,298 @@ const LoginProf = () => {
     }
   };
 
+  // Variantes pour l'effet de perspective
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      perspective: 800
+    },
+    animate: {
+      opacity: 1,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
+  // Variantes pour la barre de navigation
+  const navbarVariants = {
+    initial: { 
+      opacity: 0, 
+      y: -30 
+    },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        delay: 0.1
+      }
+    }
+  };
+
+  // Variantes pour la carte de connexion - effet de perspective
+  const cardVariants = {
+    initial: { 
+      opacity: 0,
+      rotateY: -5,
+      scale: 0.98,
+      y: 20
+    },
+    animate: { 
+      opacity: 1,
+      rotateY: 0,
+      scale: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 70,
+        damping: 15,
+        delay: 0.3,
+        duration: 0.6
+      }
+    }
+  };
+
+  // Animation pour les titres
+  const titleVariants = {
+    initial: { 
+      opacity: 0, 
+      x: -30 
+    },
+    animate: { 
+      opacity: 1, 
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        delay: 0.4
+      }
+    }
+  };
+
+  // Animation pour le formulaire - défilement de haut en bas
+  const formItemVariants = {
+    initial: { 
+      opacity: 0, 
+      y: -15 
+    },
+    animate: (custom) => ({ 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 20,
+        delay: 0.5 + (custom * 0.1)
+      }
+    })
+  };
+
+  // Animation pour le bouton de connexion - pulsation
+  const buttonVariants = {
+    initial: { 
+      opacity: 0, 
+      scale: 0.9
+    },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 15,
+        delay: 0.8
+      }
+    },
+    hover: { 
+      scale: 1.03,
+      boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    },
+    tap: { 
+      scale: 0.97,
+      boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)"
+    },
+    loading: {
+      scale: [1, 1.02, 1],
+      transition: {
+        duration: 1.5,
+        repeat: Infinity,
+        repeatType: "loop"
+      }
+    }
+  };
+
+  // Animation pour le séparateur
+  const separatorVariants = {
+    initial: { 
+      opacity: 0, 
+      width: "0%" 
+    },
+    animate: { 
+      opacity: 1, 
+      width: "100%",
+      transition: {
+        delay: 0.9,
+        duration: 0.5
+      }
+    }
+  };
+
+  // Animation pour les boutons OAuth - apparition progressive
+  const oauthButtonVariants = {
+    initial: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.9
+    },
+    animate: (custom) => ({ 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 80,
+        damping: 10,
+        delay: 1.0 + (custom * 0.2)
+      }
+    }),
+    hover: { 
+      y: -3,
+      scale: 1.03,
+      boxShadow: "0 8px 15px rgba(0, 0, 0, 0.1)",
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 10
+      }
+    },
+    tap: { 
+      y: 0,
+      scale: 0.97
+    }
+  };
+
+  // Animation pour le lien d'inscription
+  const registerLinkVariants = {
+    initial: { 
+      opacity: 0 
+    },
+    animate: { 
+      opacity: 1,
+      transition: {
+        delay: 1.4,
+        duration: 0.5
+      }
+    }
+  };
+
+  // Animation pour le message d'erreur
+  const errorVariants = {
+    initial: { 
+      opacity: 0, 
+      y: -10,
+      height: 0 
+    },
+    animate: { 
+      opacity: 1, 
+      y: 0,
+      height: "auto",
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      height: 0,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
   return (
-    <div className="login-container">
-      {/* Navbar cohérente */}
-      <nav className="navbar">
-        <div className="navbar-brand">Plateforme SGBD</div>
-        <Link to="/" className="navbar-link">
-          Retour à l'accueil
-        </Link>
-      </nav>
+    <motion.div 
+      className="login-container"
+      initial="initial"
+      animate={animationComplete ? "animate" : "initial"}
+      variants={pageVariants}
+    >
+      {/* Navbar avec animation */}
+      <motion.nav 
+        className="navbar"
+        variants={navbarVariants}
+      >
+        <motion.div 
+          className="navbar-brand"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          Plateforme SGBD
+        </motion.div>
+        
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Link to="/" className="navbar-link">
+            Retour à l'accueil
+          </Link>
+        </motion.div>
+      </motion.nav>
 
       <main className="login-main">
-        <div className="login-card">
-          <h1 className="login-title">Connexion</h1>
-          <p className="login-subtitle">Accédez à votre espace personnel</p>
+        <motion.div 
+          className="login-card"
+          variants={cardVariants}
+          style={{ transformOrigin: "center center" }}
+        >
+          <motion.h1 
+            className="login-title"
+            variants={titleVariants}
+          >
+            Connexion
+          </motion.h1>
+          
+          <motion.p 
+            className="login-subtitle"
+            variants={titleVariants}
+          >
+            Accédez à votre espace personnel
+          </motion.p>
 
-          {error && <div className="login-error-message">{error}</div>}
+          {error && (
+            <motion.div 
+              className="login-error-message"
+              variants={errorVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              {error}
+            </motion.div>
+          )}
 
-          <form onSubmit={handleLogin} className="login-form">
-            <div className="form-group">
-              <input
+          <motion.form 
+            onSubmit={handleLogin} 
+            className="login-form"
+          >
+            <motion.div 
+              className="form-group"
+              variants={formItemVariants}
+              custom={0}
+            >
+              <motion.input
                 type="email"
                 name="email"
                 placeholder="Adresse email"
@@ -122,11 +404,20 @@ const LoginProf = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="form-input"
                 required
+                whileFocus={{ 
+                  scale: 1.02, 
+                  boxShadow: "0 0 0 2px rgba(0, 123, 255, 0.25)",
+                  transition: { type: "spring", stiffness: 300 }
+                }}
               />
-            </div>
+            </motion.div>
 
-            <div className="form-group">
-              <input
+            <motion.div 
+              className="form-group"
+              variants={formItemVariants}
+              custom={1}
+            >
+              <motion.input
                 type="password"
                 name="password"
                 placeholder="Mot de passe"
@@ -134,47 +425,90 @@ const LoginProf = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="form-input"
                 required
+                whileFocus={{ 
+                  scale: 1.02, 
+                  boxShadow: "0 0 0 2px rgba(0, 123, 255, 0.25)",
+                  transition: { type: "spring", stiffness: 300 }
+                }}
               />
-            </div>
+            </motion.div>
 
-            <button type="submit" className="login-button" disabled={isLoading}>
+            <motion.button 
+              type="submit" 
+              className="login-button" 
+              disabled={isLoading}
+              variants={buttonVariants}
+              whileHover={!isLoading && "hover"}
+              whileTap={!isLoading && "tap"}
+              animate={isLoading ? "loading" : "animate"}
+            >
               {isLoading ? "Connexion en cours..." : "Se connecter"}
-            </button>
-          </form>
+            </motion.button>
+          </motion.form>
 
-          <div className="login-separator">
-            <span>OU</span>
-          </div>
+          <motion.div 
+            className="login-separator"
+            variants={separatorVariants}
+          >
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: 1,
+                transition: { delay: 1.0, duration: 0.3 }
+              }}
+            >
+              OU
+            </motion.span>
+          </motion.div>
 
-          <div className="oauth-buttons">
-            <button
+          <motion.div className="oauth-buttons">
+            <motion.button
               type="button"
               onClick={() => handleOAuthLogin("google")}
               className="oauth-button google"
+              variants={oauthButtonVariants}
+              custom={0}
+              whileHover="hover"
+              whileTap="tap"
             >
-              <span className="oauth-icon">G</span>
+              <motion.span className="oauth-icon">G</motion.span>
               Continuer avec Google
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
               type="button"
               onClick={() => handleOAuthLogin("github")}
               className="oauth-button github"
+              variants={oauthButtonVariants}
+              custom={1}
+              whileHover="hover"
+              whileTap="tap"
             >
-              <span className="oauth-icon">G</span>
+              <motion.span className="oauth-icon">G</motion.span>
               Continuer avec GitHub
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
 
-          <p className="register-link">
+          <motion.p 
+            className="register-link"
+            variants={registerLinkVariants}
+          >
             Pas encore inscrit ?{" "}
-            <Link to="/register" className="register-link-text">
-              Créer un compte
-            </Link>
-          </p>
-        </div>
+            <motion.span
+              whileHover={{ 
+                color: "#007bff", 
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <Link to="/register" className="register-link-text">
+                Créer un compte
+              </Link>
+            </motion.span>
+          </motion.p>
+        </motion.div>
       </main>
-    </div>
+    </motion.div>
   );
 };
 
