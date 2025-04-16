@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaChevronDown, FaChevronUp, FaCheckCircle, FaFileDownload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ExercicesSoumis = () => {
   const [exercises, setExercises] = useState([]);
@@ -11,6 +12,7 @@ const ExercicesSoumis = () => {
   const [grade, setGrade] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem("darkMode");
@@ -23,6 +25,51 @@ const ExercicesSoumis = () => {
     localStorage.setItem("darkMode", newMode);
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 }
+    },
+    exit: { 
+      y: -20, 
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const pageTransition = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", damping: 20, stiffness: 100 }
+    },
+    exit: { 
+      opacity: 0, 
+      y: -30,
+      transition: { duration: 0.3 }
+    }
+  };
+
   // Récupérer les exercices depuis l'API
   useEffect(() => {
     const fetchUserAndExercises = async () => {
@@ -33,7 +80,6 @@ const ExercicesSoumis = () => {
         }
         
         const token = sessionData.session.access_token;
-        console.log("Token récupéré côté client:", token);
 
         const response = await fetch("http://localhost:5000/mes-exercices", {
           method: "GET",
@@ -62,6 +108,7 @@ const ExercicesSoumis = () => {
   // Récupérer les soumissions pour un exercice spécifique
   const fetchSubmissions = async (exerciseId) => {
     try {
+      setLoading(true);
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         throw new Error("Utilisateur non authentifié.");
@@ -90,23 +137,25 @@ const ExercicesSoumis = () => {
       }
 
       setSubmissions(data);
+      setError(null);
     } catch (err) {
       console.error(err);
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Soumettre la note
   const handleGradeSubmit = async (submissionId, exerciseId) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-
-      // Vérifier si la note est présente
       if (!grade) {
-        alert("Veuillez entrer une note.");
+        showNotification("Veuillez entrer une note.", "error");
         return;
       }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
 
       const response = await fetch(`http://localhost:5000/${submissionId}/noter`, {
         method: "POST",
@@ -122,12 +171,20 @@ const ExercicesSoumis = () => {
 
       if (!response.ok) throw new Error("Erreur lors de l'envoi de la note.");
 
-      alert("Note soumise avec succès !");
+      showNotification("Note soumise avec succès !", "success");
       setSelectedSubmission(null);
       setGrade("");
+      
+      // Rafraîchir les soumissions
+      await fetchSubmissions(exerciseId);
     } catch (err) {
-      alert("Erreur : " + err.message);
+      showNotification(`Erreur : ${err.message}`, "error");
     }
+  };
+
+  const showNotification = (message, type = "info") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   return (
@@ -141,53 +198,126 @@ const ExercicesSoumis = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Overlay */}
-      <div
+      {/* Overlay avec transition */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
         className={`absolute inset-0 ${
           darkMode ? "bg-black/60" : "bg-white/20"
         } z-0 transition-colors duration-500`}
       />
 
-      {/* Entête */}
-      <header className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md">
-        <h1 className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
+      {/* Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+              notification.type === "success" ? "bg-green-500" : "bg-red-500"
+            } text-white font-bold flex items-center space-x-2`}
+          >
+            {notification.type === "success" ? (
+              <FaCheckCircle className="text-xl" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <span>{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Entête avec animation */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 15 }}
+        className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md"
+      >
+        <motion.h1 
+          className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+        >
           Plateforme SGBD
-        </h1>
+        </motion.h1>
         <div className="flex gap-3">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/dashboard-prof")}
             className="text-lg font-semibold underline text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
           >
             Retour
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={toggleDarkMode}
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition"
           >
             {darkMode ? "☀️ Mode Clair" : "🌙 Mode Sombre"}
-          </button>
+          </motion.button>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Contenu principal */}
-      <main className="relative z-10 flex-grow flex flex-col items-center justify-start py-8 px-4">
-        <div className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full">
-          <h2 className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2">
+      {/* Contenu principal avec animations */}
+      <motion.main 
+        className="relative z-10 flex-grow flex flex-col items-center justify-start py-8 px-4"
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={pageTransition}
+      >
+        <motion.div 
+          className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full"
+          variants={containerVariants}
+        >
+          <motion.h2 
+            className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2"
+            variants={itemVariants}
+          >
             <FaUser className="text-blue-500" />
             Liste des Exercices Soumis
-          </h2>
+          </motion.h2>
 
           {loading ? (
-            <p className="text-gray-300 text-center">Chargement...</p>
+            <motion.div 
+              className="flex justify-center py-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </motion.div>
           ) : error && !selectedExercise ? (
-            <p className="text-red-500 text-center">Erreur: {error}</p>
+            <motion.p 
+              className="text-red-500 text-center p-4 bg-red-100/30 rounded-lg"
+              variants={itemVariants}
+            >
+              Erreur: {error}
+            </motion.p>
           ) : exercises.length === 0 ? (
-            <p className="text-gray-300 text-center">Aucun exercice disponible.</p>
+            <motion.p 
+              className="text-gray-300 text-center p-6 bg-gray-800/50 rounded-lg"
+              variants={itemVariants}
+            >
+              Aucun exercice disponible.
+            </motion.p>
           ) : (
-            <div className="space-y-4">
-              {exercises.map((exercise) => (
-                <div
+            <motion.div 
+              className="space-y-4"
+              variants={containerVariants}
+            >
+              {exercises.map((exercise, index) => (
+                <motion.div
                   key={exercise.id}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
                   className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition"
                 >
                   <div>
@@ -198,119 +328,172 @@ const ExercicesSoumis = () => {
                       Description : {exercise.commentaire?.substring(0, 60) ?? "Aucune description"}...
                     </p>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setSelectedExercise(exercise);
                       fetchSubmissions(exercise.id);
                     }}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition flex items-center gap-2"
                   >
                     Voir les soumissions
-                  </button>
-                </div>
+                    {selectedExercise?.id === exercise.id ? <FaChevronUp /> : <FaChevronDown />}
+                  </motion.button>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
         {/* Afficher les soumissions de l'exercice sélectionné */}
-        {selectedExercise && (
-          <div className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8">
-            <h3 className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
-              Soumissions pour l'exercice "{selectedExercise.titre}"
-            </h3>
+        <AnimatePresence>
+          {selectedExercise && (
+            <motion.div
+              key="submissions"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={containerVariants}
+              className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8"
+            >
+              <motion.h3 variants={itemVariants} className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
+                Soumissions pour l'exercice "{selectedExercise.titre}"
+              </motion.h3>
 
-            {error ? (
-              <p className="text-red-500 text-center">{error}</p>
-            ) : submissions.length === 0 ? (
-              <p className="text-gray-300 text-center">
-                Aucune soumission pour cet exercice.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {submissions.map((submission) => (
-                  <div
-                    key={submission.id}
-                    className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition"
-                  >
-                    <div>
-                      <p className="text-lg font-bold text-gray-800 dark:text-white">
-                        Étudiant : {submission.studentName ?? "Inconnu"}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedSubmission(submission)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
+              {loading ? (
+                <motion.div 
+                  className="flex justify-center py-10"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                </motion.div>
+              ) : error ? (
+                <motion.p variants={itemVariants} className="text-red-500 text-center p-4 bg-red-100/30 rounded-lg">
+                  {error}
+                </motion.p>
+              ) : submissions.length === 0 ? (
+                <motion.p variants={itemVariants} className="text-gray-300 text-center p-6 bg-gray-800/50 rounded-lg">
+                  Aucune soumission pour cet exercice.
+                </motion.p>
+              ) : (
+                <motion.div variants={containerVariants} className="space-y-4">
+                  {submissions.map((submission) => (
+                    <motion.div
+                      key={submission.id}
+                      variants={itemVariants}
+                      whileHover={{ scale: 1.02 }}
+                      className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition"
                     >
-                      Noter
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                      <div>
+                        <p className="text-lg font-bold text-gray-800 dark:text-white">
+                          Étudiant : {submission.studentName ?? "Inconnu"}
+                        </p>
+                        {submission.note && (
+                          <p className="text-green-600 dark:text-green-400 font-medium">
+                            Note : {submission.note}/20
+                          </p>
+                        )}
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedSubmission(submission)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
+                      >
+                        {submission.note ? "Modifier la note" : "Noter"}
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Visualisation et notation de la soumission */}
-        {selectedSubmission && (
-          <div className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8">
-            <h3 className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
-              Soumission de {selectedSubmission.studentName}
-            </h3>
-            <div className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
-              <p className="text-gray-800 dark:text-gray-200 mb-2">
-                <strong>Titre :</strong> {selectedSubmission.exerciseTitle}
-              </p>
-              <p className="text-gray-800 dark:text-gray-200 mb-2">
-                <strong>Description :</strong> {selectedSubmission.description}
-              </p>
-              <a
-                href={selectedSubmission.fichier_reponse}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 dark:text-blue-400 underline"
-              >
-                Télécharger le fichier soumis
-              </a>
-            </div>
-
-            {/* Formulaire pour attribuer une note */}
-            <div className="mt-6 bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
-              <label className="block text-gray-800 dark:text-white font-bold mb-2">
-                Attribuer une note :
-              </label>
-              <input
-                type="number"
-                value={grade}
-                onChange={(e) => setGrade(e.target.value)}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white focus:outline-none"
-                placeholder="Entrez une note"
-              />
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={() => handleGradeSubmit(selectedSubmission.id, selectedExercise.id)}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition"
+        <AnimatePresence>
+          {selectedSubmission && (
+            <motion.div
+              key="grading"
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              variants={containerVariants}
+              className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8"
+            >
+              <motion.h3 variants={itemVariants} className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
+                Soumission de {selectedSubmission.studentName}
+              </motion.h3>
+              <motion.div variants={itemVariants} className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
+                <p className="text-gray-800 dark:text-gray-200 mb-2">
+                  <strong>Titre :</strong> {selectedSubmission.exerciseTitle}
+                </p>
+                <p className="text-gray-800 dark:text-gray-200 mb-2">
+                  <strong>Description :</strong> {selectedSubmission.description}
+                </p>
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  variants={itemVariants}
+                  href={selectedSubmission.fichier_reponse}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 dark:text-blue-400 underline flex items-center gap-2 w-fit"
                 >
-                  Soumettre la note
-                </button>
-                <button
-                  onClick={() => setSelectedSubmission(null)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition"
-                >
-                  Fermer
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+                  <FaFileDownload /> Télécharger le fichier soumis
+                </motion.a>
+              </motion.div>
 
-      {/* Footer */}
-      <footer className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-4 text-center">
+              {/* Formulaire pour attribuer une note */}
+              <motion.div variants={itemVariants} className="mt-6 bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
+                <label className="block text-gray-800 dark:text-white font-bold mb-2">
+                  Attribuer une note :
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={grade}
+                  onChange={(e) => setGrade(e.target.value)}
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg p-2 w-full focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white focus:outline-none"
+                  placeholder="Entrez une note sur 20"
+                />
+                <div className="flex gap-4 mt-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleGradeSubmit(selectedSubmission.id, selectedExercise.id)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition flex items-center gap-2"
+                  >
+                    <FaCheckCircle /> Soumettre la note
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedSubmission(null)}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 transition"
+                  >
+                    Fermer
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.main>
+
+      {/* Footer avec animation */}
+      <motion.footer
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 50, damping: 20, delay: 0.2 }}
+        className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-4 text-center"
+      >
         <p className="text-lg font-semibold">
           © 2025 Plateforme SGBD. Tous droits réservés.
         </p>
-      </footer>
+      </motion.footer>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { FaPen } from "react-icons/fa";
+import { FaPen, FaArrowLeft, FaSun, FaMoon, FaCheck } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import supabase from "../../supabaseClient";
 
 const ModifierExercice = () => {
@@ -9,10 +10,14 @@ const ModifierExercice = () => {
 
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
+  const [fileName, setFileName] = useState("");
   const [comment, setComment] = useState("");
   const [deadline, setDeadline] = useState("");
   const [professeurId, setProfesseurId] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem("darkMode");
     return savedMode === "true";
@@ -24,9 +29,41 @@ const ModifierExercice = () => {
     localStorage.setItem("darkMode", newMode);
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+        duration: 0.5
+      }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.3 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { duration: 0.5 }
+    }
+  };
+
+  const buttonVariants = {
+    hover: { scale: 1.05, boxShadow: "0px 5px 10px rgba(0, 0, 0, 0.2)" },
+    tap: { scale: 0.95 }
+  };
+
   // Récupération des données de l'exercice
   useEffect(() => {
     const fetchExercise = async () => {
+      setLoading(true);
       try {
         const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
@@ -56,18 +93,33 @@ const ModifierExercice = () => {
           ? new Date(rawDate).toISOString().split("T")[0]
           : "";
         setDeadline(formattedDate);
+        if (data.fichier_nom) {
+          setFileName(data.fichier_nom);
+        }
       } catch (err) {
         console.error("Erreur :", err);
         setError("Impossible de charger l'exercice.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchExercise();
   }, [id]);
 
+  // Gestion du fichier
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+    }
+  };
+
   // Soumettre les modifications
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true);
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -89,15 +141,19 @@ const ModifierExercice = () => {
       });
 
       if (response.ok) {
-        alert("Exercice modifié avec succès !");
-        navigate("/exercices");
+        setSuccess(true);
+        setTimeout(() => {
+          navigate("/exercices");
+        }, 2000);
       } else {
         const data = await response.json();
-        alert("Erreur : " + (data.error || "Erreur inconnue"));
+        throw new Error(data.error || "Erreur inconnue");
       }
     } catch (err) {
       console.error("Erreur :", err);
-      alert("Une erreur s'est produite.");
+      setError(err.message || "Une erreur s'est produite.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -111,9 +167,31 @@ const ModifierExercice = () => {
           backgroundPosition: "center 20%",
           backgroundRepeat: "no-repeat",
         }}>
-        <div className="text-center text-red-500 text-xl font-bold p-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg rounded-lg">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center text-red-500 text-xl font-bold p-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg rounded-lg shadow-lg"
+        >
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-6xl mb-4"
+          >
+            ⚠️
+          </motion.div>
           {error}
-        </div>
+          <motion.button 
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+            onClick={() => navigate("/exercices")}
+            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+          >
+            Retourner aux exercices
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
@@ -129,114 +207,223 @@ const ModifierExercice = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Overlay */}
-      <div
-        className={`absolute inset-0 ${
-          darkMode ? "bg-black/60" : "bg-white/20"
-        } z-0 transition-colors duration-500`}
+      {/* Overlay avec transition */}
+      <motion.div
+        initial={false}
+        animate={{ 
+          backgroundColor: darkMode ? "rgba(0, 0, 0, 0.6)" : "rgba(255, 255, 255, 0.2)" 
+        }}
+        transition={{ duration: 0.5 }}
+        className="absolute inset-0 z-0"
       />
 
-      {/* Entête */}
-      <header className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md">
+      {/* Entête avec animation */}
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 15 }}
+        className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md"
+      >
         <h1 className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
           Modifier l'exercice
         </h1>
         <div className="flex gap-3">
-          <button
+          <motion.button
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
             onClick={() => navigate("/exercices")}
-            className="text-lg font-semibold underline text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+            className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 border border-transparent rounded-md hover:border-gray-300 dark:hover:border-gray-700 transition-all"
           >
-            Retour
-          </button>
-          <button
+            <FaArrowLeft /> Retour
+          </motion.button>
+          <motion.button
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
             onClick={toggleDarkMode}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2"
           >
-            {darkMode ? "☀️ Mode Clair" : "🌙 Mode Sombre"}
-          </button>
+            {darkMode ? <FaSun /> : <FaMoon />}
+            {darkMode ? "Mode Clair" : "Mode Sombre"}
+          </motion.button>
         </div>
-      </header>
+      </motion.header>
 
-      {/* Contenu principal */}
+      {/* Contenu principal avec animations */}
       <main className="relative z-10 flex-grow flex items-center justify-center py-8 px-4">
-        <div className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-3xl w-full">
-          <h2 className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2">
-            <FaPen className="text-blue-500" />
-            Modifier l'exercice
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Titre */}
-            <div>
-              <label className="block text-gray-200 font-bold mb-2 text-xl">
-                Titre de l'exercice
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
-                required
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mb-4"
               />
-            </div>
+              <p className="text-xl font-semibold text-white">Chargement de l'exercice...</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="content"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-3xl w-full"
+            >
+              <motion.div variants={itemVariants} className="text-center mb-6">
+                <h2 className="text-5xl font-extrabold text-gray-100 flex items-center justify-center gap-2">
+                  <FaPen className="text-blue-500" />
+                  Modifier l'exercice
+                </h2>
+              </motion.div>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Titre */}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-gray-200 font-bold mb-2 text-xl">
+                    Titre de l'exercice
+                  </label>
+                  <motion.input
+                    whileFocus={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
+                    required
+                  />
+                </motion.div>
 
-            {/* Fichier */}
-            <div>
-              <label className="block text-gray-200 font-bold mb-2 text-xl">
-                Ajouter un fichier
-              </label>
-              <input
-                type="file"
-                onChange={(e) => setFile(e.target.files[0])}
-                className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
-              />
-            </div>
+                {/* Fichier */}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-gray-200 font-bold mb-2 text-xl">
+                    Ajouter un fichier
+                  </label>
+                  <div className="relative">
+                    <motion.input
+                      type="file"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 z-10 cursor-pointer"
+                    />
+                    <motion.div
+                      whileHover={{ scale: 1.01 }}
+                      className="border border-gray-300 rounded-lg p-4 w-full bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg flex items-center justify-between"
+                    >
+                      <span className={fileName ? "" : "text-gray-500"}>
+                        {fileName || "Sélectionner un fichier..."}
+                      </span>
+                      <button type="button" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Parcourir
+                      </button>
+                    </motion.div>
+                  </div>
+                </motion.div>
 
-            {/* Commentaire */}
-            <div>
-              <label className="block text-gray-200 font-bold mb-2 text-xl">
-                Commentaire
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
-                rows="3"
-              />
-            </div>
+                {/* Commentaire */}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-gray-200 font-bold mb-2 text-xl">
+                    Commentaire
+                  </label>
+                  <motion.textarea
+                    whileFocus={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
+                    rows="3"
+                  />
+                </motion.div>
 
-            {/* Date limite */}
-            <div>
-              <label className="block text-gray-200 font-bold mb-2 text-xl">
-                Date limite
-              </label>
-              <input
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
-                required
-              />
-            </div>
+                {/* Date limite */}
+                <motion.div variants={itemVariants}>
+                  <label className="block text-gray-200 font-bold mb-2 text-xl">
+                    Date limite
+                  </label>
+                  <motion.input
+                    whileFocus={{ scale: 1.01 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="border border-gray-300 rounded-lg p-4 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white/80 dark:bg-gray-700/90 text-gray-800 dark:text-white text-lg"
+                    required
+                  />
+                </motion.div>
 
-            {/* Bouton */}
-            <div className="text-center">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-8 py-4 rounded-lg font-extrabold text-xl hover:bg-blue-700 transition duration-300"
-              >
-                Modifier
-              </button>
-            </div>
-          </form>
-        </div>
+                {/* Bouton avec animation de chargement et succès */}
+                <motion.div variants={itemVariants} className="text-center pt-4">
+                  <AnimatePresence mode="wait">
+                    {success ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex flex-col items-center justify-center gap-2"
+                      >
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", damping: 10, stiffness: 200 }}
+                          className="bg-green-100 dark:bg-green-800 rounded-full p-2"
+                        >
+                          <FaCheck className="text-3xl text-green-600 dark:text-green-200" />
+                        </motion.div>
+                        <p className="text-xl font-bold text-green-600 dark:text-green-200">
+                          Modifications enregistrées !
+                        </p>
+                        <p className="text-gray-200">Redirection en cours...</p>
+                      </motion.div>
+                    ) : (
+                      <motion.button
+                        variants={buttonVariants}
+                        whileHover="hover"
+                        whileTap="tap"
+                        type="submit"
+                        disabled={saving}
+                        className={`px-8 py-4 rounded-lg font-extrabold text-xl transition duration-300 
+                          ${saving 
+                            ? "bg-gray-500 cursor-not-allowed" 
+                            : "bg-blue-600 hover:bg-blue-700"} text-white`}
+                      >
+                        {saving ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                              className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                            />
+                            <span>Enregistrement...</span>
+                          </div>
+                        ) : (
+                          "Modifier"
+                        )}
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-4 text-center">
+      {/* Footer avec animation */}
+      <motion.footer
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 100, damping: 15 }}
+        className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-4 text-center"
+      >
         <p className="text-lg font-semibold">
           © 2025 Plateforme SGBD. Tous droits réservés.
         </p>
-      </footer>
+      </motion.footer>
     </div>
   );
 };

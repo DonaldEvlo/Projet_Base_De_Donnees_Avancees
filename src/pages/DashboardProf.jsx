@@ -18,6 +18,7 @@ const DashboardProf = () => {
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const [activePage, setActivePage] = useState(null);
+  const [loading, setLoading] = useState(true); // État pour contrôler l'animation de chargement
   const headerRef = useRef(null);
   
   // Motion values for parallax effects
@@ -31,6 +32,11 @@ const DashboardProf = () => {
       setIsLoaded(true);
     }, 100);
 
+    // Simulation du chargement de données
+    const loadingTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500); // 2.5 secondes de chargement simulé
+
     // Handle scroll events for parallax
     const handleScroll = () => {
       scrollY.set(window.scrollY);
@@ -39,6 +45,7 @@ const DashboardProf = () => {
     window.addEventListener('scroll', handleScroll);
     return () => {
       clearTimeout(timer);
+      clearTimeout(loadingTimer);
       window.removeEventListener('scroll', handleScroll);
     };
   }, [scrollY]);
@@ -146,6 +153,19 @@ const DashboardProf = () => {
         duration: 0.1 
       } 
     }
+  };
+
+  const loadingCircleVariants = {
+    initial: { opacity: 0, rotate: 0 },
+    animate: { 
+      opacity: 1, 
+      rotate: 360, 
+      transition: { 
+        rotate: { duration: 1, ease: "linear", repeat: Infinity },
+        opacity: { duration: 0.3 }
+      }
+    },
+    exit: { opacity: 0, transition: { duration: 0.3 } }
   };
 
   const textRevealVariants = {
@@ -335,124 +355,175 @@ const DashboardProf = () => {
 
           {/* Main content */}
           <main className="flex-grow flex flex-col items-center justify-start pt-16 pb-16 px-4">
-            <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              className="bg-white/20 dark:bg-gray-800/70 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-full max-w-6xl border border-white/20 mt-8"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                  transition: { 
-                    delay: 0.3, 
-                    duration: 0.5,
-                    type: "spring",
-                    stiffness: 150,
-                    damping: 15
-                  }
-                }}
-                className="flex flex-col items-center mb-12"
-              >
-                {/* Animation corrigée pour l'emoji - d'abord une animation tween puis un spring */}
+            <AnimatePresence mode="wait">
+              {/* Loading state with animated spinner */}
+              {loading && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    delay: 0.5
-                  }}
+                  key="loading"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex flex-col items-center py-16"
                 >
-                  <motion.span
-                    animate={floatingAnimation}
-                    className="text-5xl mb-3 inline-block"
+                  <div className="relative w-24 h-24 mb-8">
+                    <motion.div
+                      variants={loadingCircleVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="absolute inset-0 border-4 border-t-blue-500 border-r-blue-400 border-b-blue-300 border-l-transparent rounded-full"
+                    />
+                    <motion.div
+                      variants={loadingCircleVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={{ delay: 0.2 }}
+                      className="absolute inset-2 border-4 border-t-indigo-500 border-r-indigo-400 border-b-indigo-300 border-l-transparent rounded-full"
+                    />
+                  </div>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ 
+                      opacity: 1,
+                      transition: { delay: 0.3 }
+                    }}
+                    className="text-center text-xl text-gray-100 font-medium flex items-center"
                   >
-                    🧑‍🏫
-                  </motion.span>
+                    <span>Chargement du tableau de bord</span>
+                    <motion.span
+                      animate={{ opacity: [0, 1, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      ...
+                    </motion.span>
+                  </motion.p>
                 </motion.div>
-                
-                <motion.h2 
-                  className="text-4xl font-bold text-center text-gray-900 dark:text-white"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: 1, 
-                    y: 0,
-                    transition: { 
-                      delay: 0.7, 
-                      duration: 0.6,
-                      ease: [0.22, 1, 0.36, 1]
-                    }
-                  }}
-                >
-                  Tableau de Bord Professeur
-                </motion.h2>
-                
-                <motion.div 
-                  className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 rounded mt-4"
-                  initial={{ width: 0, opacity: 0 }}
-                  animate={{ 
-                    width: 100, 
-                    opacity: 1,
-                    transition: {
-                      delay: 0.9,
-                      duration: 0.5
-                    }
-                  }}
-                />
-              </motion.div>
+              )}
 
-              <motion.div 
-                className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <DashboardCard
-                  icon={<FaChalkboardTeacher className="text-5xl text-orange-500 mb-2" />}
-                  label="Créer un Exercice"
-                  description="Développez de nouveaux exercices pour vos étudiants"
-                  onClick={() => handleNavigation("/create-exercise")}
-                  variants={cardVariants}
-                  delay={0.2}
-                  darkMode={darkMode}
-                  isActive={activePage === "/create-exercise"}
-                />
-                <DashboardCard
-                  icon={<FaBook className="text-5xl text-green-500 mb-2" />}
-                  label="Exercices"
-                  description="Gérez votre bibliothèque d'exercices"
-                  onClick={() => handleNavigation("/exercices")}
-                  variants={cardVariants}
-                  delay={0.3}
-                  darkMode={darkMode}
-                  isActive={activePage === "/exercices"}
-                />
-                <DashboardCard
-                  icon={<FaChartBar className="text-5xl text-purple-500 mb-2" />}
-                  label="Exercices Soumis"
-                  description="Consultez et évaluez les réponses des étudiants"
-                  onClick={() => handleNavigation("/exercices-soumis")}
-                  variants={cardVariants}
-                  delay={0.4}
-                  darkMode={darkMode}
-                  isActive={activePage === "/exercices-soumis"}
-                />
-                <DashboardCard
-                  icon={<FaSignOutAlt className="text-5xl text-red-500 mb-2" />}
-                  label="Déconnexion"
-                  description="Quitter votre session"
-                  onClick={handleLogout}
-                  variants={cardVariants}
-                  delay={0.5}
-                  darkMode={darkMode}
-                  isActive={false}
-                />
-              </motion.div>
-            </motion.div>
+              {/* Content when loaded */}
+              {!loading && (
+                <motion.div
+                  key="content"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="bg-white/20 dark:bg-gray-800/70 backdrop-blur-lg p-10 rounded-2xl shadow-2xl w-full max-w-6xl border border-white/20 mt-8"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1,
+                      transition: { 
+                        delay: 0.3, 
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 150,
+                        damping: 15
+                      }
+                    }}
+                    className="flex flex-col items-center mb-12"
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20,
+                        delay: 0.5
+                      }}
+                    >
+                      <motion.span
+                        animate={floatingAnimation}
+                        className="text-5xl mb-3 inline-block"
+                      >
+                        🧑‍🏫
+                      </motion.span>
+                    </motion.div>
+                    
+                    <motion.h2 
+                      className="text-4xl font-bold text-center text-gray-900 dark:text-white"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ 
+                        opacity: 1, 
+                        y: 0,
+                        transition: { 
+                          delay: 0.7, 
+                          duration: 0.6,
+                          ease: [0.22, 1, 0.36, 1]
+                        }
+                      }}
+                    >
+                      Tableau de Bord Professeur
+                    </motion.h2>
+                    
+                    <motion.div 
+                      className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 rounded mt-4"
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ 
+                        width: 100, 
+                        opacity: 1,
+                        transition: {
+                          delay: 0.9,
+                          duration: 0.5
+                        }
+                      }}
+                    />
+                  </motion.div>
+
+                  <motion.div 
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <DashboardCard
+                      icon={<FaChalkboardTeacher className="text-5xl text-orange-500 mb-2" />}
+                      label="Créer un Exercice"
+                      description="Développez de nouveaux exercices pour vos étudiants"
+                      onClick={() => handleNavigation("/create-exercise")}
+                      variants={cardVariants}
+                      delay={0.2}
+                      darkMode={darkMode}
+                      isActive={activePage === "/create-exercise"}
+                    />
+                    <DashboardCard
+                      icon={<FaBook className="text-5xl text-green-500 mb-2" />}
+                      label="Exercices"
+                      description="Gérez votre bibliothèque d'exercices"
+                      onClick={() => handleNavigation("/exercices")}
+                      variants={cardVariants}
+                      delay={0.3}
+                      darkMode={darkMode}
+                      isActive={activePage === "/exercices"}
+                    />
+                    <DashboardCard
+                      icon={<FaChartBar className="text-5xl text-purple-500 mb-2" />}
+                      label="Exercices Soumis"
+                      description="Consultez et évaluez les réponses des étudiants"
+                      onClick={() => handleNavigation("/exercices-soumis")}
+                      variants={cardVariants}
+                      delay={0.4}
+                      darkMode={darkMode}
+                      isActive={activePage === "/exercices-soumis"}
+                    />
+                    <DashboardCard
+                      icon={<FaSignOutAlt className="text-5xl text-red-500 mb-2" />}
+                      label="Déconnexion"
+                      description="Quitter votre session"
+                      onClick={handleLogout}
+                      variants={cardVariants}
+                      delay={0.5}
+                      darkMode={darkMode}
+                      isActive={false}
+                    />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </main>
 
           {/* Animated footer */}
