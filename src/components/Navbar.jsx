@@ -22,12 +22,12 @@ function Navbar() {
           </Link>
         </li>
         <li>
-          <Link to="/dashboard-prof" className="navbar-link">
+          <Link to="/login/prof" className="navbar-link">
             Dashboard Prof
           </Link>
         </li>
         <li>
-          <Link to="/dashboard-etudiant" className="navbar-link">
+          <Link to="/login/etudiant" className="navbar-link">
             Dashboard Étudiant
           </Link>
         </li>
