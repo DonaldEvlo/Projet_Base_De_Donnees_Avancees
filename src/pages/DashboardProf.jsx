@@ -1,16 +1,18 @@
+import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import {
   FaBook,
   FaChalkboardTeacher,
   FaChartBar,
   FaHome,
-  FaSignOutAlt,
   FaLaptopCode,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
 
 const DashboardProf = () => {
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem("darkMode");
@@ -59,14 +61,22 @@ const DashboardProf = () => {
     }, 500);
   };
 
-  const handleLogout = () => {
-    // Animation de départ avant navigation
-    setIsLoaded(false);
-    setTimeout(() => {
-      navigate("/");
-    }, 500);
+  const handleLogout = async () => {
+    try {
+      console.log("Déconnexion en cours...");
+      await signOut(); // 🔐 Déconnexion Supabase (ou autre)
+      setUser(null);    // 🧠 Déconnexion côté client
+      console.log("Déconnexion réussie !");
+      
+      setIsLoaded(false); // 🎞️ Lance l'animation de sortie
+      setTimeout(() => {
+        navigate("/");    // 🚀 Redirection après animation
+      }, 500);
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error.message);
+    }
   };
-
+  
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);

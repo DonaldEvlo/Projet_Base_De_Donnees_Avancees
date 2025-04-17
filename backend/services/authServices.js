@@ -287,9 +287,9 @@ export const getEtudiant = async () => {
     console.log("🔎 Vérification de l'existence de l'utilisateur dans la base...");
 
     // Vérifier dans les deux tables
-    const { data: professeurs } = await supabase.from('etudiants').select('*').eq('id', user.id);
+    const { data: etudiant } = await supabase.from('etudiants').select('*').eq('id', user.id);
   
-    if ((professeurs && professeurs.length > 0) ) {
+    if ((etudiant && etudiant.length > 0) ) {
       console.log("✅ Utilisateur déjà existant en base.");
 
       return user;

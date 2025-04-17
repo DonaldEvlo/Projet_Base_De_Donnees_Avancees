@@ -1,9 +1,12 @@
-import { useEffect, useState, useRef } from "react";
-import { FaFileAlt, FaSearch, FaArrowRight, FaLaptopCode } from "react-icons/fa";
+import { AnimatePresence, motion, useMotionValue, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { FaArrowRight, FaFileAlt, FaLaptopCode, FaSearch } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { signOut } from "../../backend/services/authServices";
 
 const DashboardEtudiant = () => {
+  const [user, setUser] = useState(null);
+   const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
   const [exercises, setExercises] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,8 +73,20 @@ const DashboardEtudiant = () => {
       : String(exercise.id).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      console.log("Déconnexion en cours...");
+      await signOut(); // 🔐 Déconnexion Supabase (ou autre)
+      setUser(null);    // 🧠 Déconnexion côté client
+      console.log("Déconnexion réussie !");
+      
+      setIsLoaded(false); // 🎞️ Lance l'animation de sortie
+      setTimeout(() => {
+        navigate("/");    // 🚀 Redirection après animation
+      }, 500);
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error.message);
+    }
   };
 
   // Enhanced animation variants
