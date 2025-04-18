@@ -7,9 +7,10 @@ import {
   FaHome,
   FaLaptopCode,
   FaSignOutAlt,
+  FaUsers, // Nouvelle icône pour les performances des étudiants
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
+import { signOut } from "../../backend/services/authServices";
 
 const DashboardProf = () => {
   const [user, setUser] = useState(null);
@@ -20,40 +21,35 @@ const DashboardProf = () => {
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const [activePage, setActivePage] = useState(null);
-  const [loading, setLoading] = useState(true); // État pour contrôler l'animation de chargement
+  const [loading, setLoading] = useState(true);
   const headerRef = useRef(null);
-  
-  // Motion values for parallax effects
+
   const scrollY = useMotionValue(0);
   const headerOpacity = useTransform(scrollY, [0, 100], [1, 0.8]);
   const headerBlur = useTransform(scrollY, [0, 100], [0, 8]);
 
   useEffect(() => {
-    // Effet d'entrée progressif
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 100);
 
-    // Simulation du chargement de données
     const loadingTimer = setTimeout(() => {
       setLoading(false);
-    }, 2500); // 2.5 secondes de chargement simulé
+    }, 2500);
 
-    // Handle scroll events for parallax
     const handleScroll = () => {
       scrollY.set(window.scrollY);
     };
-    
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener("scroll", handleScroll);
     return () => {
       clearTimeout(timer);
       clearTimeout(loadingTimer);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [scrollY]);
 
   const handleNavigation = (path) => {
-    // Animer la sortie avant navigation
     setActivePage(path);
     setIsLoaded(false);
     setTimeout(() => {
@@ -64,42 +60,32 @@ const DashboardProf = () => {
   const handleLogout = async () => {
     try {
       console.log("Déconnexion en cours...");
-      await signOut(); // 🔐 Déconnexion Supabase (ou autre)
-      setUser(null);    // 🧠 Déconnexion côté client
+      await signOut();
+      setUser(null);
       console.log("Déconnexion réussie !");
-      
-      setIsLoaded(false); // 🎞️ Lance l'animation de sortie
+      setIsLoaded(false);
       setTimeout(() => {
-        navigate("/");    // 🚀 Redirection après animation
+        navigate("/");
       }, 500);
     } catch (error) {
       console.error("Erreur lors de la déconnexion :", error.message);
     }
   };
-  
+
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
     localStorage.setItem("darkMode", newMode);
   };
 
-  // Animation variants avec timing amélioré
+  // Animation variants (inchangées)
   const pageVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
-        duration: 0.6, 
-        ease: [0.22, 1, 0.36, 1] // Ease-out cubic pour un mouvement plus naturel
-      }
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
     },
-    exit: { 
-      opacity: 0,
-      transition: { 
-        duration: 0.4, 
-        ease: [0.65, 0, 0.35, 1] // Ease-in-out cubic
-      }
-    }
+    exit: { opacity: 0, transition: { duration: 0.4, ease: [0.65, 0, 0.35, 1] } },
   };
 
   const containerVariants = {
@@ -111,9 +97,9 @@ const DashboardProf = () => {
         duration: 0.7,
         when: "beforeChildren",
         staggerChildren: 0.12,
-        ease: [0.22, 1, 0.36, 1]
-      }
-    }
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
   };
 
   const cardVariants = {
@@ -122,98 +108,64 @@ const DashboardProf = () => {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { 
-        duration: 0.4, 
-        ease: [0.22, 1, 0.36, 1]
-      }
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
     },
     hover: {
       y: -8,
       scale: 1.03,
       boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08)",
-      transition: { 
-        duration: 0.3,
-        type: "spring", 
-        stiffness: 300, 
-        damping: 15
-      }
+      transition: { duration: 0.3, type: "spring", stiffness: 300, damping: 15 },
     },
-    tap: {
-      scale: 0.97,
-      transition: { duration: 0.1 }
-    }
+    tap: { scale: 0.97, transition: { duration: 0.1 } },
   };
 
   const buttonVariants = {
     initial: { scale: 0.95, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
-    hover: { 
-      scale: 1.05, 
+    hover: {
+      scale: 1.05,
       boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-      transition: { 
-        duration: 0.3,
-        type: "spring", 
-        stiffness: 400, 
-        damping: 10
-      } 
+      transition: { duration: 0.3, type: "spring", stiffness: 400, damping: 10 },
     },
-    tap: { 
-      scale: 0.95, 
-      transition: { 
-        duration: 0.1 
-      } 
-    }
+    tap: { scale: 0.95, transition: { duration: 0.1 } },
   };
 
   const loadingCircleVariants = {
     initial: { opacity: 0, rotate: 0 },
-    animate: { 
-      opacity: 1, 
-      rotate: 360, 
-      transition: { 
+    animate: {
+      opacity: 1,
+      rotate: 360,
+      transition: {
         rotate: { duration: 1, ease: "linear", repeat: Infinity },
-        opacity: { duration: 0.3 }
-      }
+        opacity: { duration: 0.3 },
+      },
     },
-    exit: { opacity: 0, transition: { duration: 0.3 } }
+    exit: { opacity: 0, transition: { duration: 0.3 } },
   };
 
   const textRevealVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
-        duration: 0.5, 
-        ease: [0.22, 1, 0.36, 1]
-      }
-    }
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+    },
   };
 
   const floatingAnimation = {
     y: [-5, 5],
     transition: {
-      y: {
-        duration: 2,
-        repeat: Infinity,
-        repeatType: "reverse",
-        ease: "easeInOut"
-      }
-    }
+      y: { duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" },
+    },
   };
 
   const headerTextVariants = {
     initial: { opacity: 0, y: -20 },
-    animate: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
-        delay: 0.4, 
-        duration: 0.6, 
-        type: "spring", 
-        stiffness: 100 
-      }
-    }
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { delay: 0.4, duration: 0.6, type: "spring", stiffness: 100 },
+    },
   };
 
   return (
@@ -239,30 +191,30 @@ const DashboardProf = () => {
             {Array.from({ length: 20 }).map((_, i) => (
               <motion.div
                 key={`particle-${i}`}
-                initial={{ 
-                  opacity: 0.3, 
+                initial={{
+                  opacity: 0.3,
                   scale: Math.random() * 0.5 + 0.5,
-                  x: Math.random() * window.innerWidth, 
-                  y: Math.random() * window.innerHeight 
+                  x: Math.random() * window.innerWidth,
+                  y: Math.random() * window.innerHeight,
                 }}
-                animate={{ 
-                  opacity: [0.2, 0.5, 0.2], 
+                animate={{
+                  opacity: [0.2, 0.5, 0.2],
                   y: [
                     Math.random() * window.innerHeight,
                     Math.random() * window.innerHeight - 200,
-                    Math.random() * window.innerHeight
+                    Math.random() * window.innerHeight,
                   ],
                   x: [
                     Math.random() * window.innerWidth,
                     Math.random() * window.innerWidth + 100,
-                    Math.random() * window.innerWidth
+                    Math.random() * window.innerWidth,
                   ],
                 }}
-                transition={{ 
-                  duration: Math.random() * 20 + 10, 
+                transition={{
+                  duration: Math.random() * 20 + 10,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  ease: "easeInOut" 
+                  ease: "easeInOut",
                 }}
                 className={`absolute w-2 h-2 rounded-full ${
                   darkMode ? "bg-blue-400" : "bg-white"
@@ -276,9 +228,9 @@ const DashboardProf = () => {
         {/* Background overlay with transition */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ 
+          animate={{
             opacity: 1,
-            backgroundColor: darkMode ? "rgba(0, 0, 0, 0.75)" : "rgba(0, 0, 0, 0.5)"
+            backgroundColor: darkMode ? "rgba(0, 0, 0, 0.75)" : "rgba(0, 0, 0, 0.5)",
           }}
           transition={{ duration: 1 }}
           className="absolute inset-0 z-0"
@@ -289,36 +241,34 @@ const DashboardProf = () => {
           {/* Header with parallax effect */}
           <motion.header
             ref={headerRef}
-            style={{ 
+            style={{
               opacity: headerOpacity,
-              backdropFilter: `blur(${headerBlur.get()}px)`
+              backdropFilter: `blur(${headerBlur.get()}px)`,
             }}
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
             className="sticky top-0 z-50 bg-white/40 dark:bg-black/50 py-4 px-8 flex justify-between items-center shadow-lg"
           >
-            <motion.h1 
+            <motion.h1
               variants={headerTextVariants}
               className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white flex items-center gap-2"
             >
-              <motion.div
-                animate={floatingAnimation}
-              >
+              <motion.div animate={floatingAnimation}>
                 <FaLaptopCode className="text-blue-500 text-3xl" />
               </motion.div>
               <motion.span
                 initial={{ opacity: 0, x: -20 }}
-                animate={{ 
-                  opacity: 1, 
+                animate={{
+                  opacity: 1,
                   x: 0,
-                  transition: { delay: 0.5, duration: 0.5 }
+                  transition: { delay: 0.5, duration: 0.5 },
                 }}
               >
                 Plateforme SGBD
               </motion.span>
             </motion.h1>
-            
+
             <div className="flex gap-3">
               <motion.button
                 variants={buttonVariants}
@@ -395,9 +345,9 @@ const DashboardProf = () => {
                   </div>
                   <motion.p
                     initial={{ opacity: 0 }}
-                    animate={{ 
+                    animate={{
                       opacity: 1,
-                      transition: { delay: 0.3 }
+                      transition: { delay: 0.3 },
                     }}
                     className="text-center text-xl text-gray-100 font-medium flex items-center"
                   >
@@ -423,16 +373,16 @@ const DashboardProf = () => {
                 >
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ 
-                      opacity: 1, 
+                    animate={{
+                      opacity: 1,
                       scale: 1,
-                      transition: { 
-                        delay: 0.3, 
+                      transition: {
+                        delay: 0.3,
                         duration: 0.5,
                         type: "spring",
                         stiffness: 150,
-                        damping: 15
-                      }
+                        damping: 15,
+                      },
                     }}
                     className="flex flex-col items-center mb-12"
                   >
@@ -443,7 +393,7 @@ const DashboardProf = () => {
                         type: "spring",
                         stiffness: 260,
                         damping: 20,
-                        delay: 0.5
+                        delay: 0.5,
                       }}
                     >
                       <motion.span
@@ -453,39 +403,36 @@ const DashboardProf = () => {
                         🧑‍🏫
                       </motion.span>
                     </motion.div>
-                    
-                    <motion.h2 
+
+                    <motion.h2
                       className="text-4xl font-bold text-center text-gray-900 dark:text-white"
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ 
-                        opacity: 1, 
+                      animate={{
+                        opacity: 1,
                         y: 0,
-                        transition: { 
-                          delay: 0.7, 
+                        transition: {
+                          delay: 0.7,
                           duration: 0.6,
-                          ease: [0.22, 1, 0.36, 1]
-                        }
+                          ease: [0.22, 1, 0.36, 1],
+                        },
                       }}
                     >
                       Tableau de Bord Professeur
                     </motion.h2>
-                    
-                    <motion.div 
+
+                    <motion.div
                       className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 rounded mt-4"
                       initial={{ width: 0, opacity: 0 }}
-                      animate={{ 
-                        width: 100, 
+                      animate={{
+                        width: 100,
                         opacity: 1,
-                        transition: {
-                          delay: 0.9,
-                          duration: 0.5
-                        }
+                        transition: { delay: 0.9, duration: 0.5 },
                       }}
                     />
                   </motion.div>
 
-                  <motion.div 
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                  <motion.div
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" // Ajustement pour plus de cartes
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
@@ -520,13 +467,24 @@ const DashboardProf = () => {
                       darkMode={darkMode}
                       isActive={activePage === "/exercices-soumis"}
                     />
+                    {/* Nouvelle carte pour les performances des étudiants */}
+                    <DashboardCard
+                      icon={<FaUsers className="text-5xl text-blue-500 mb-2" />}
+                      label="Performances Étudiants"
+                      description="Analysez les progrès et résultats de vos étudiants"
+                      onClick={() => handleNavigation("/student-performance")}
+                      variants={cardVariants}
+                      delay={0.5}
+                      darkMode={darkMode}
+                      isActive={activePage === "/student-performance"}
+                    />
                     <DashboardCard
                       icon={<FaSignOutAlt className="text-5xl text-red-500 mb-2" />}
                       label="Déconnexion"
                       description="Quitter votre session"
                       onClick={handleLogout}
                       variants={cardVariants}
-                      delay={0.5}
+                      delay={0.6}
                       darkMode={darkMode}
                       isActive={false}
                     />
@@ -543,13 +501,13 @@ const DashboardProf = () => {
             transition={{ delay: 1, duration: 0.6, ease: "easeOut" }}
             className="relative z-10 bg-white/40 dark:bg-black/60 backdrop-blur-md text-gray-900 dark:text-white py-6 text-center mt-12"
           >
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.2, duration: 0.5 }}
               className="max-w-xl mx-auto px-4"
             >
-              <motion.p 
+              <motion.p
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 1.3 }}
@@ -557,8 +515,7 @@ const DashboardProf = () => {
               >
                 © 2025 Plateforme SGBD. Tous droits réservés.
               </motion.p>
-              
-              {/* Additional footer animation */}
+
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -574,67 +531,49 @@ const DashboardProf = () => {
 };
 
 const DashboardCard = ({ icon, label, description, onClick, variants, delay, darkMode, isActive }) => {
-  // Animation spécifique pour l'icône
   const iconVariants = {
     hidden: { scale: 0, rotate: -10 },
-    visible: { 
+    visible: {
       scale: 1,
       rotate: 0,
-      transition: { 
-        delay: delay + 0.2,
-        type: "spring",
-        stiffness: 260,
-        damping: 20
-      }
+      transition: { delay: delay + 0.2, type: "spring", stiffness: 260, damping: 20 },
     },
-    hover: { 
+    hover: {
       scale: 1.1,
-      transition: { 
-        duration: 0.3, 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 10 
-      }
-    }
+      transition: { duration: 0.3, type: "spring", stiffness: 400, damping: 10 },
+    },
   };
 
   const textVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { delay: delay + 0.3, duration: 0.4 }
-    }
+      transition: { delay: delay + 0.3, duration: 0.4 },
+    },
   };
 
-  // Style conditionnel basé sur l'état actif
   const cardBaseClass = `
     bg-white/90 dark:bg-gray-700/90 
     rounded-xl p-6 shadow-lg
     hover:shadow-xl transition-all duration-300 
     flex flex-col items-center justify-between 
     cursor-pointer overflow-hidden transform-gpu
-    ${isActive ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}
+    ${isActive ? "ring-2 ring-blue-500 dark:ring-blue-400" : ""}
   `;
-  
-  // Animation de fond au survol
+
   const bgVariants = {
     hover: {
-      backgroundPosition: ['0% 0%', '100% 100%'],
-      transition: { duration: 3, repeat: Infinity, repeatType: "reverse" }
-    }
+      backgroundPosition: ["0% 0%", "100% 100%"],
+      transition: { duration: 3, repeat: Infinity, repeatType: "reverse" },
+    },
   };
 
   const floatingAnimation = {
     y: [-5, 5],
     transition: {
-      y: {
-        duration: 2,
-        repeat: Infinity,
-        repeatType: "reverse",
-        ease: "easeInOut"
-      }
-    }
+      y: { duration: 2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" },
+    },
   };
 
   return (
@@ -644,31 +583,25 @@ const DashboardCard = ({ icon, label, description, onClick, variants, delay, dar
       whileTap="tap"
       onClick={onClick}
       className={cardBaseClass}
-      style={{
-        position: 'relative'
-      }}
+      style={{ position: "relative" }}
     >
-      {/* Effet de surbrillance au survol */}
       <motion.div
         variants={bgVariants}
         className="absolute inset-0 opacity-0 hover:opacity-10 bg-gradient-to-br from-blue-300 via-purple-300 to-pink-300 dark:from-blue-600 dark:via-purple-600 dark:to-pink-600"
-        style={{ 
-          backgroundSize: '200% 200%'
-        }}
+        style={{ backgroundSize: "200% 200%" }}
       />
-      
-      {/* Card decorative elements */}
-      <motion.div 
+
+      <motion.div
         className="absolute top-0 left-0 right-0 h-1.5 bg-blue-500"
         whileHover={{ scaleX: 1.05, height: "6px", transition: { duration: 0.3 } }}
       />
-      
+
       <motion.div
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 0.8, scale: 1, transition: { delay: 0.3 } }}
         className="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-blue-500/10 blur-xl"
       />
-      
+
       <div className="relative z-10 flex flex-col items-center">
         <motion.div
           variants={iconVariants}
@@ -677,7 +610,7 @@ const DashboardCard = ({ icon, label, description, onClick, variants, delay, dar
         >
           {icon}
         </motion.div>
-        <motion.h3 
+        <motion.h3
           variants={textVariants}
           className="text-xl font-bold text-center text-gray-900 dark:text-white"
         >
