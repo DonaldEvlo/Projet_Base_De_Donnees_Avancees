@@ -501,7 +501,116 @@ app.get('/etudiant/:id/notes', async (req, res) => {
   }
 });
 
+//Performances
+app.get('/performances', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
 
+    const token = authHeader.split(' ')[1];
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData) {
+      return res.status(401).json({ error: 'Token invalide' });
+    }
+    if (userError) throw userError;
+
+    const userId = userData.user.id;
+
+    // Fetch all submissions and notes for the student
+    const { data: submissions, error: submissionsError } = await supabase
+      .from('soumissions')
+      .select(`
+        id,
+        exercice_id,
+        date_soumission,
+        exercices (
+          pdf_url,
+          commentaire
+        ),
+        notes (
+          note_finale
+        )
+      `)
+      .eq('etudiant_id', userId)
+      .order('date_soumission', { ascending: false });
+
+    if (submissionsError) throw submissionsError;
+
+    const { data: exercices, error: exercicesError } = await supabase
+      .from('exercices')
+      .select(`*
+      `);
+
+    if (exercicesError) throw exercicesError;
+
+    // Calculate performance metrics
+    const totalExercises = exercices.length;
+    const completedExercises = submissions.filter(s => s.notes).length;
+    const scores = submissions
+      .filter(s => s.notes)
+      .map(s => s.notes.note_finale);
+
+    const averageScore = scores.length > 0 
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) 
+      : 0;
+    const bestScore = scores.length > 0 
+      ? Math.round(Math.max(...scores)) 
+      : 0;
+
+    // Get recent submissions
+    const recentSubmissions = submissions
+      .slice(0, 3)
+      .map(sub => ({
+        id: sub.id,
+        exerciceId: sub.exercice_id,
+        titre: sub.exercices.commentaire || `Exercice ${sub.exercice_id}`,
+        score: sub.notes ? Math.round(sub.notes.note_finale) : 0,
+        date: sub.date_soumission
+      }));
+
+    // Calculate monthly progress
+    const monthlyScores = new Map();
+    submissions.forEach(sub => {
+      if (sub.notes) {
+        const month = new Date(sub.date_soumission).toLocaleString('fr', { month: 'short' });
+        if (!monthlyScores.has(month)) {
+          monthlyScores.set(month, []);
+        }
+        monthlyScores.get(month).push(sub.notes.note_finale);
+      }
+    });
+
+    const monthlyProgress = Array.from(monthlyScores.entries())
+      .map(([month, scores]) => ({
+        month,
+        score: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      }))
+      .slice(-4);
+
+    res.json({
+      completionRate: Math.round((completedExercises / totalExercises) * 100) || 0,
+      averageScore,
+      bestScore,
+      exercisesCompleted: completedExercises,
+      totalExercises,
+      recentSubmissions,
+      monthlyProgress,
+      skillsRadar: [
+        { skill: "SQL Basique", value: averageScore },
+        { skill: "Jointures", value: averageScore },
+        { skill: "Agrégation", value: averageScore },
+        { skill: "Optimisation", value: averageScore },
+        { skill: "Normalisation", value: averageScore }
+      ]
+    });
+
+  } catch (error) {
+    console.error('Error fetching performance data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.listen(port, () => {
     console.log(`Serveur démarré sur http://localhost:${port}`); 
