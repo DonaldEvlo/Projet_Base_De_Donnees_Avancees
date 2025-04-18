@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { FaUser, FaChevronDown, FaChevronUp, FaCheckCircle, FaFileDownload } from "react-icons/fa";
+import {
+  FaUser,
+  FaChevronDown,
+  FaChevronUp,
+  FaCheckCircle,
+  FaFileDownload,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,63 +34,64 @@ const ExercicesSoumis = () => {
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         duration: 0.5,
         when: "beforeChildren",
-        staggerChildren: 0.1
-      }
+        staggerChildren: 0.1,
+      },
     },
-    exit: { 
+    exit: {
       opacity: 0,
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
+      transition: { type: "spring", stiffness: 100 },
     },
-    exit: { 
-      y: -20, 
+    exit: {
+      y: -20,
       opacity: 0,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const pageTransition = {
     hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { type: "spring", damping: 20, stiffness: 100 }
+      transition: { type: "spring", damping: 20, stiffness: 100 },
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       y: -30,
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
 
   // Récupérer les exercices depuis l'API
   useEffect(() => {
     const fetchUserAndExercises = async () => {
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
         if (sessionError || !sessionData.session) {
           throw new Error("Utilisateur non authentifié.");
         }
-        
+
         const token = sessionData.session.access_token;
 
         const response = await fetch("http://localhost:5000/mes-exercices", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -109,19 +116,23 @@ const ExercicesSoumis = () => {
   const fetchSubmissions = async (exerciseId) => {
     try {
       setLoading(true);
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
       if (sessionError || !sessionData.session) {
         throw new Error("Utilisateur non authentifié.");
       }
 
       const token = sessionData.session.access_token;
 
-      const response = await fetch(`http://localhost:5000/exercices/${exerciseId}/soumissions`, {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5000/exercices/${exerciseId}/soumissions`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Erreur lors de la récupération des soumissions.");
@@ -130,7 +141,10 @@ const ExercicesSoumis = () => {
       const data = await response.json();
 
       // Vérifie si la réponse contient un message spécifique ou si la liste est vide
-      if (data.message === "Aucune soumission trouvée pour cet exercice." || data.length === 0) {
+      if (
+        data.message === "Aucune soumission trouvée pour cet exercice." ||
+        data.length === 0
+      ) {
         setSubmissions([]);
         setError("Aucune soumission trouvée pour cet exercice.");
         return;
@@ -157,24 +171,27 @@ const ExercicesSoumis = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const response = await fetch(`http://localhost:5000/${submissionId}/noter`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          grade,
-          exerciseId,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:5000/${submissionId}/noter`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            grade,
+            exerciseId,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Erreur lors de l'envoi de la note.");
 
       showNotification("Note soumise avec succès !", "success");
       setSelectedSubmission(null);
       setGrade("");
-      
+
       // Rafraîchir les soumissions
       await fetchSubmissions(exerciseId);
     } catch (err) {
@@ -222,8 +239,19 @@ const ExercicesSoumis = () => {
             {notification.type === "success" ? (
               <FaCheckCircle className="text-xl" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             )}
             <span>{notification.message}</span>
@@ -238,7 +266,7 @@ const ExercicesSoumis = () => {
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
         className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md"
       >
-        <motion.h1 
+        <motion.h1
           className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -251,34 +279,55 @@ const ExercicesSoumis = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/dashboard-prof")}
-            className="text-lg font-semibold underline text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+            className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+            type="button"
           >
-            Retour
+            <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1024 1024"
+                height="25px"
+                width="25px"
+              >
+                <path
+                  d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                  fill="#000000"
+                ></path>
+                <path
+                  d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                  fill="#000000"
+                ></path>
+              </svg>
+            </div>
+            <p className="translate-x-2">Go Back</p>
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleDarkMode}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition"
-          >
-            {darkMode ? "☀️ Mode Clair" : "🌙 Mode Sombre"}
-          </motion.button>
+
+          <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
+            <input
+              className="peer sr-only"
+              id="darkModeToggle"
+              type="checkbox"
+              checked={darkMode}
+              onChange={toggleDarkMode}
+            />
+            <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+          </label>
         </div>
       </motion.header>
 
       {/* Contenu principal avec animations */}
-      <motion.main 
+      <motion.main
         className="relative z-10 flex-grow flex flex-col items-center justify-start py-8 px-4"
         initial="hidden"
         animate="visible"
         exit="exit"
         variants={pageTransition}
       >
-        <motion.div 
+        <motion.div
           className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full"
           variants={containerVariants}
         >
-          <motion.h2 
+          <motion.h2
             className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2"
             variants={itemVariants}
           >
@@ -287,7 +336,7 @@ const ExercicesSoumis = () => {
           </motion.h2>
 
           {loading ? (
-            <motion.div 
+            <motion.div
               className="flex justify-center py-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -295,24 +344,21 @@ const ExercicesSoumis = () => {
               <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </motion.div>
           ) : error && !selectedExercise ? (
-            <motion.p 
+            <motion.p
               className="text-red-500 text-center p-4 bg-red-100/30 rounded-lg"
               variants={itemVariants}
             >
               Erreur: {error}
             </motion.p>
           ) : exercises.length === 0 ? (
-            <motion.p 
+            <motion.p
               className="text-gray-300 text-center p-6 bg-gray-800/50 rounded-lg"
               variants={itemVariants}
             >
               Aucun exercice disponible.
             </motion.p>
           ) : (
-            <motion.div 
-              className="space-y-4"
-              variants={containerVariants}
-            >
+            <motion.div className="space-y-4" variants={containerVariants}>
               {exercises.map((exercise, index) => (
                 <motion.div
                   key={exercise.id}
@@ -325,7 +371,10 @@ const ExercicesSoumis = () => {
                       Exercice : {exercise.titre ?? "Sans titre"}
                     </p>
                     <p className="text-gray-600 dark:text-gray-300">
-                      Description : {exercise.commentaire?.substring(0, 60) ?? "Aucune description"}...
+                      Description :{" "}
+                      {exercise.commentaire?.substring(0, 60) ??
+                        "Aucune description"}
+                      ...
                     </p>
                   </div>
                   <motion.button
@@ -338,7 +387,11 @@ const ExercicesSoumis = () => {
                     className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition flex items-center gap-2"
                   >
                     Voir les soumissions
-                    {selectedExercise?.id === exercise.id ? <FaChevronUp /> : <FaChevronDown />}
+                    {selectedExercise?.id === exercise.id ? (
+                      <FaChevronUp />
+                    ) : (
+                      <FaChevronDown />
+                    )}
                   </motion.button>
                 </motion.div>
               ))}
@@ -357,12 +410,15 @@ const ExercicesSoumis = () => {
               variants={containerVariants}
               className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8"
             >
-              <motion.h3 variants={itemVariants} className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
+              <motion.h3
+                variants={itemVariants}
+                className="text-2xl font-bold text-gray-100 dark:text-white mb-4"
+              >
                 Soumissions pour l'exercice "{selectedExercise.titre}"
               </motion.h3>
 
               {loading ? (
-                <motion.div 
+                <motion.div
                   className="flex justify-center py-10"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -370,11 +426,17 @@ const ExercicesSoumis = () => {
                   <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </motion.div>
               ) : error ? (
-                <motion.p variants={itemVariants} className="text-red-500 text-center p-4 bg-red-100/30 rounded-lg">
+                <motion.p
+                  variants={itemVariants}
+                  className="text-red-500 text-center p-4 bg-red-100/30 rounded-lg"
+                >
                   {error}
                 </motion.p>
               ) : submissions.length === 0 ? (
-                <motion.p variants={itemVariants} className="text-gray-300 text-center p-6 bg-gray-800/50 rounded-lg">
+                <motion.p
+                  variants={itemVariants}
+                  className="text-gray-300 text-center p-6 bg-gray-800/50 rounded-lg"
+                >
                   Aucune soumission pour cet exercice.
                 </motion.p>
               ) : (
@@ -423,15 +485,22 @@ const ExercicesSoumis = () => {
               variants={containerVariants}
               className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8"
             >
-              <motion.h3 variants={itemVariants} className="text-2xl font-bold text-gray-100 dark:text-white mb-4">
+              <motion.h3
+                variants={itemVariants}
+                className="text-2xl font-bold text-gray-100 dark:text-white mb-4"
+              >
                 Soumission de {selectedSubmission.studentName}
               </motion.h3>
-              <motion.div variants={itemVariants} className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
+              <motion.div
+                variants={itemVariants}
+                className="bg-white/90 dark:bg-gray-700 p-4 rounded-lg"
+              >
                 <p className="text-gray-800 dark:text-gray-200 mb-2">
                   <strong>Titre :</strong> {selectedSubmission.exerciseTitle}
                 </p>
                 <p className="text-gray-800 dark:text-gray-200 mb-2">
-                  <strong>Description :</strong> {selectedSubmission.description}
+                  <strong>Description :</strong>{" "}
+                  {selectedSubmission.description}
                 </p>
                 <motion.a
                   whileHover={{ scale: 1.05 }}
@@ -446,7 +515,10 @@ const ExercicesSoumis = () => {
               </motion.div>
 
               {/* Formulaire pour attribuer une note */}
-              <motion.div variants={itemVariants} className="mt-6 bg-white/90 dark:bg-gray-700 p-4 rounded-lg">
+              <motion.div
+                variants={itemVariants}
+                className="mt-6 bg-white/90 dark:bg-gray-700 p-4 rounded-lg"
+              >
                 <label className="block text-gray-800 dark:text-white font-bold mb-2">
                   Attribuer une note :
                 </label>
@@ -463,7 +535,12 @@ const ExercicesSoumis = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => handleGradeSubmit(selectedSubmission.id, selectedExercise.id)}
+                    onClick={() =>
+                      handleGradeSubmit(
+                        selectedSubmission.id,
+                        selectedExercise.id
+                      )
+                    }
                     className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-600 transition flex items-center gap-2"
                   >
                     <FaCheckCircle /> Soumettre la note

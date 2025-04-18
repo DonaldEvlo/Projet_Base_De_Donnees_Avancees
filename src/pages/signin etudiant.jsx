@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getEtudiant, listenToAuthChanges, signInWithEmail, signInWithOAuthEtudiant, updateEtudiantProfile } from "../../backend/services/authServices";
+import {
+  getEtudiant,
+  listenToAuthChanges,
+  signInWithEmail,
+  signInWithOAuthEtudiant,
+  updateEtudiantProfile,
+} from "../../backend/services/authServices";
 import "../styles/signin.css";
 // Import de Framer Motion pour les animations
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,7 +25,7 @@ const LoginEtudiant = () => {
 
   useEffect(() => {
     setIsPageMounted(true);
-    
+
     const checkUser = async () => {
       try {
         const userWithData = await getEtudiant();
@@ -54,7 +60,9 @@ const LoginEtudiant = () => {
 
       const userWithData = await getEtudiant();
       if (!userWithData || !userWithData.role) {
-        throw new Error("Impossible de récupérer les informations de l'utilisateur");
+        throw new Error(
+          "Impossible de récupérer les informations de l'utilisateur"
+        );
       }
 
       setUser(userWithData);
@@ -89,8 +97,13 @@ const LoginEtudiant = () => {
       console.log("Informations supplémentaires enregistrées avec succès !");
       navigate("/dashboard-etudiant");
     } catch (err) {
-      console.error("Erreur lors de l'enregistrement des informations supplémentaires :", err);
-      setError("Erreur lors de l'enregistrement des informations supplémentaires.");
+      console.error(
+        "Erreur lors de l'enregistrement des informations supplémentaires :",
+        err
+      );
+      setError(
+        "Erreur lors de l'enregistrement des informations supplémentaires."
+      );
     } finally {
       setLoading(false);
     }
@@ -99,28 +112,28 @@ const LoginEtudiant = () => {
   // Animations pour le conteneur de la carte
   const cardContainerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         duration: 0.4,
-        when: "beforeChildren"
-      }
+        when: "beforeChildren",
+      },
     },
-    exit: { 
+    exit: {
       opacity: 0,
       scale: 0.95,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   // Animation spéciale pour la carte de connexion - effet 3D subtil
   const cardVariants = {
-    hidden: { 
+    hidden: {
       opacity: 0,
       y: 30,
-      rotateX: 10
+      rotateX: 10,
     },
-    visible: { 
+    visible: {
       opacity: 1,
       y: 0,
       rotateX: 0,
@@ -128,16 +141,16 @@ const LoginEtudiant = () => {
         type: "spring",
         damping: 15,
         stiffness: 100,
-        duration: 0.6
-      }
-    }
+        duration: 0.6,
+      },
+    },
   };
 
   // Animation pour les éléments du formulaire - entrée par le côté
   const formItemVariants = {
-    hidden: { 
-      x: -20, 
-      opacity: 0
+    hidden: {
+      x: -20,
+      opacity: 0,
     },
     visible: (custom) => ({
       x: 0,
@@ -146,16 +159,16 @@ const LoginEtudiant = () => {
         delay: custom * 0.1,
         duration: 0.5,
         type: "spring",
-        stiffness: 100
-      }
-    })
+        stiffness: 100,
+      },
+    }),
   };
 
   // Animation pour les boutons OAuth - effet rebond
   const oauthButtonVariants = {
     hidden: {
       opacity: 0,
-      y: 20
+      y: 20,
     },
     visible: (custom) => ({
       opacity: 1,
@@ -164,8 +177,8 @@ const LoginEtudiant = () => {
         delay: custom * 0.15,
         type: "spring",
         stiffness: 120,
-        damping: 8
-      }
+        damping: 8,
+      },
     }),
     hover: {
       scale: 1.03,
@@ -174,109 +187,131 @@ const LoginEtudiant = () => {
       transition: {
         type: "spring",
         stiffness: 400,
-        damping: 10
-      }
+        damping: 10,
+      },
     },
     tap: {
       scale: 0.97,
-      boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
-    }
+      boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    },
   };
 
   // Animation de la navbar - apparition progressive avec un effet de glissement
   const navbarVariants = {
-    hidden: { 
-      y: -50, 
-      opacity: 0 
+    hidden: {
+      y: -50,
+      opacity: 0,
     },
-    visible: { 
-      y: 0, 
+    visible: {
+      y: 0,
       opacity: 1,
-      transition: { 
-        type: "spring", 
+      transition: {
+        type: "spring",
         stiffness: 50,
         delay: 0.1,
-        duration: 0.5
-      } 
-    }
+        duration: 0.5,
+      },
+    },
   };
 
   // Animation pour les messages d'erreur
   const errorVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: -10, 
-      height: 0 
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      height: "auto",
-      transition: { 
-        type: "spring", 
-        stiffness: 100 
-      } 
-    },
-    exit: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
+      y: -10,
       height: 0,
-      transition: { 
-        duration: 0.2 
-      } 
-    }
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      height: "auto",
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+    exit: {
+      opacity: 0,
+      height: 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
   };
 
   // Animation pour le bouton de connexion
   const loginButtonVariants = {
     hidden: { opacity: 0, scale: 0.9 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
-      transition: { 
-        delay: 0.4, 
-        type: "spring", 
-        stiffness: 200, 
-        damping: 10 
-      }
+      transition: {
+        delay: 0.4,
+        type: "spring",
+        stiffness: 200,
+        damping: 10,
+      },
     },
-    hover: { 
+    hover: {
       scale: 1.05,
       boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
-      transition: { 
-        duration: 0.2
-      }
+      transition: {
+        duration: 0.2,
+      },
     },
-    tap: { 
-      scale: 0.98
-    }
+    tap: {
+      scale: 0.98,
+    },
   };
 
   return (
     <div className="login-container">
-      <motion.nav 
+      <motion.nav
         className="navbar"
         initial="hidden"
         animate="visible"
         variants={navbarVariants}
       >
-        <motion.div 
+        <motion.div
           className="navbar-brand"
           whileHover={{ scale: 1.05 }}
           transition={{ type: "spring", stiffness: 400 }}
         >
           Plateforme SGBD
         </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400 }}
-        >
-          <Link to="/" className="navbar-link">Retour à l'accueil</Link>
-        </motion.div>
+      
+         <motion.button
+         whileHover={{ scale: 1.05 }}
+         whileTap={{ scale: 0.95 }}
+         onClick={() => navigate("/login")}
+         className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+         type="button"
+       >
+         <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+           <svg
+             xmlns="http://www.w3.org/2000/svg"
+             viewBox="0 0 1024 1024"
+             height="25px"
+             width="25px"
+           >
+             <path
+               d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+               fill="#000000"
+             ></path>
+             <path
+               d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+               fill="#000000"
+             ></path>
+           </svg>
+         </div>
+         <p className="translate-x-2">Go Back</p>
+       </motion.button>
+        
       </motion.nav>
 
       <main className="login-main">
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={showAdditionalForm ? "additional" : "login"}
             className="login-card"
             initial="hidden"
@@ -287,7 +322,7 @@ const LoginEtudiant = () => {
             <motion.div variants={cardVariants}>
               {!showAdditionalForm ? (
                 <>
-                  <motion.h1 
+                  <motion.h1
                     className="login-title"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -295,8 +330,8 @@ const LoginEtudiant = () => {
                   >
                     Connexion
                   </motion.h1>
-                  
-                  <motion.p 
+
+                  <motion.p
                     className="login-subtitle"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -307,7 +342,7 @@ const LoginEtudiant = () => {
 
                   <AnimatePresence>
                     {error && (
-                      <motion.div 
+                      <motion.div
                         className="login-error-message"
                         initial="hidden"
                         animate="visible"
@@ -320,7 +355,7 @@ const LoginEtudiant = () => {
                   </AnimatePresence>
 
                   <motion.form onSubmit={handleLogin} className="login-form">
-                    <motion.div 
+                    <motion.div
                       className="form-group"
                       variants={formItemVariants}
                       custom={0}
@@ -333,15 +368,15 @@ const LoginEtudiant = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         className="form-input"
                         required
-                        whileFocus={{ 
-                          scale: 1.02, 
+                        whileFocus={{
+                          scale: 1.02,
                           boxShadow: "0 0 0 2px rgba(66, 153, 225, 0.3)",
-                          transition: { type: "spring", stiffness: 300 }
+                          transition: { type: "spring", stiffness: 300 },
                         }}
                       />
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="form-group"
                       variants={formItemVariants}
                       custom={1}
@@ -354,17 +389,17 @@ const LoginEtudiant = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="form-input"
                         required
-                        whileFocus={{ 
-                          scale: 1.02, 
+                        whileFocus={{
+                          scale: 1.02,
                           boxShadow: "0 0 0 2px rgba(66, 153, 225, 0.3)",
-                          transition: { type: "spring", stiffness: 300 }
+                          transition: { type: "spring", stiffness: 300 },
                         }}
                       />
                     </motion.div>
 
-                    <motion.button 
-                      type="submit" 
-                      className="login-button" 
+                    <motion.button
+                      type="submit"
+                      className="login-button"
                       disabled={isLoading}
                       variants={loginButtonVariants}
                       whileHover="hover"
@@ -384,7 +419,7 @@ const LoginEtudiant = () => {
                     </motion.button>
                   </motion.form>
 
-                  <motion.div 
+                  <motion.div
                     className="login-separator"
                     initial={{ opacity: 0, scaleX: 0.5 }}
                     animate={{ opacity: 1, scaleX: 1 }}
@@ -400,9 +435,9 @@ const LoginEtudiant = () => {
                   </motion.div>
 
                   <motion.div className="oauth-buttons">
-                    <motion.button 
-                      type="button" 
-                      onClick={() => handleOAuthLogin("google")} 
+                    <motion.button
+                      type="button"
+                      onClick={() => handleOAuthLogin("google")}
                       className="oauth-button google"
                       variants={oauthButtonVariants}
                       custom={0}
@@ -413,9 +448,9 @@ const LoginEtudiant = () => {
                       Continuer avec Google
                     </motion.button>
 
-                    <motion.button 
-                      type="button" 
-                      onClick={() => handleOAuthLogin("github")} 
+                    <motion.button
+                      type="button"
+                      onClick={() => handleOAuthLogin("github")}
                       className="oauth-button github"
                       variants={oauthButtonVariants}
                       custom={1}
@@ -428,22 +463,22 @@ const LoginEtudiant = () => {
                   </motion.div>
                 </>
               ) : (
-                <motion.form 
-                  onSubmit={handleAdditionalInfoSubmit} 
+                <motion.form
+                  onSubmit={handleAdditionalInfoSubmit}
                   className="additional-info-form"
                   initial="hidden"
                   animate="visible"
                   variants={cardContainerVariants}
                 >
-                  <motion.h2 
+                  <motion.h2
                     className="login-title"
                     variants={formItemVariants}
                     custom={0}
                   >
                     Informations supplémentaires
                   </motion.h2>
-                  
-                  <motion.p 
+
+                  <motion.p
                     className="login-subtitle"
                     variants={formItemVariants}
                     custom={1}
@@ -453,7 +488,7 @@ const LoginEtudiant = () => {
 
                   <AnimatePresence>
                     {error && (
-                      <motion.div 
+                      <motion.div
                         className="login-error-message"
                         initial="hidden"
                         animate="visible"
@@ -465,7 +500,7 @@ const LoginEtudiant = () => {
                     )}
                   </AnimatePresence>
 
-                  <motion.div 
+                  <motion.div
                     className="form-group"
                     variants={formItemVariants}
                     custom={2}
@@ -478,15 +513,15 @@ const LoginEtudiant = () => {
                       onChange={(e) => setClasse(e.target.value)}
                       className="form-input"
                       required
-                      whileFocus={{ 
-                        scale: 1.02, 
+                      whileFocus={{
+                        scale: 1.02,
                         boxShadow: "0 0 0 2px rgba(66, 153, 225, 0.3)",
-                        transition: { type: "spring", stiffness: 300 }
+                        transition: { type: "spring", stiffness: 300 },
                       }}
                     />
                   </motion.div>
 
-                  <motion.div 
+                  <motion.div
                     className="form-group"
                     variants={formItemVariants}
                     custom={3}
@@ -499,17 +534,17 @@ const LoginEtudiant = () => {
                       onChange={(e) => setFiliere(e.target.value)}
                       className="form-input"
                       required
-                      whileFocus={{ 
-                        scale: 1.02, 
+                      whileFocus={{
+                        scale: 1.02,
                         boxShadow: "0 0 0 2px rgba(66, 153, 225, 0.3)",
-                        transition: { type: "spring", stiffness: 300 }
+                        transition: { type: "spring", stiffness: 300 },
                       }}
                     />
                   </motion.div>
 
-                  <motion.button 
-                    type="submit" 
-                    className="login-button" 
+                  <motion.button
+                    type="submit"
+                    className="login-button"
                     disabled={isLoading}
                     variants={loginButtonVariants}
                     whileHover="hover"
@@ -520,7 +555,7 @@ const LoginEtudiant = () => {
                 </motion.form>
               )}
 
-              <motion.p 
+              <motion.p
                 className="register-link"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -528,13 +563,15 @@ const LoginEtudiant = () => {
               >
                 Pas encore inscrit ?{" "}
                 <motion.span
-                  whileHover={{ 
-                    scale: 1.05, 
+                  whileHover={{
+                    scale: 1.05,
                     color: "#007bff",
-                    transition: { duration: 0.2 }
+                    transition: { duration: 0.2 },
                   }}
                 >
-                  <Link to="/register" className="register-link-text">Créer un compte</Link>
+                  <Link to="/register" className="register-link-text">
+                    Créer un compte
+                  </Link>
                 </motion.span>
               </motion.p>
             </motion.div>

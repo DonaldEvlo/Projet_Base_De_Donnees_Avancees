@@ -225,28 +225,45 @@ const ModifierExercice = () => {
         className="relative z-10 bg-white/40 dark:bg-black/50 backdrop-blur-md py-4 px-8 flex justify-between items-center shadow-md"
       >
         <h1 className="text-2xl font-extrabold tracking-wide uppercase text-gray-900 dark:text-white">
-          Modifier l'exercice
+          PLATEFORME SGBD
         </h1>
         <div className="flex gap-3">
           <motion.button
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-            onClick={() => navigate("/exercices")}
-            className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 px-4 py-2 border border-transparent rounded-md hover:border-gray-300 dark:hover:border-gray-700 transition-all"
-          >
-            <FaArrowLeft /> Retour
-          </motion.button>
-          <motion.button
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-            onClick={toggleDarkMode}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-semibold transition flex items-center gap-2"
-          >
-            {darkMode ? <FaSun /> : <FaMoon />}
-            {darkMode ? "Mode Clair" : "Mode Sombre"}
-          </motion.button>
+                   whileHover={{ scale: 1.05 }}
+                   whileTap={{ scale: 0.95 }}
+                   onClick={() => navigate("/exercices")}
+                   className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+                   type="button"
+                 >
+                   <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+                     <svg
+                       xmlns="http://www.w3.org/2000/svg"
+                       viewBox="0 0 1024 1024"
+                       height="25px"
+                       width="25px"
+                     >
+                       <path
+                         d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                         fill="#000000"
+                       ></path>
+                       <path
+                         d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                         fill="#000000"
+                       ></path>
+                     </svg>
+                   </div>
+                   <p className="translate-x-2">Go Back</p>
+                 </motion.button>
+          <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
+            <input
+              className="peer sr-only"
+              id="darkModeToggle"
+              type="checkbox"
+              checked={darkMode}
+              onChange={toggleDarkMode}
+            />
+            <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+          </label>
         </div>
       </motion.header>
 
