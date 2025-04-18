@@ -16,6 +16,7 @@ import LoginEtudiant from "../../src/pages/signin etudiant";
 import LoginProf from "../../src/pages/signin prof";
 import Register from "../../src/pages/signup";
 import StudentPerformance from "../../src/pages/StudentPerformance"; // Import du nouveau composant
+import CorrectionIA from "../../src/pages/CorrectionIA";
 
 const AppRoutes = () => {
   return (
@@ -35,6 +36,7 @@ const AppRoutes = () => {
       <Route path="/notes-attribuées" element={<NotesParProf />} />
       <Route path="/login" element={<ChooseRole />} />
       <Route path="/student-performance" element={<StudentPerformance />} /> {/* Nouvelle route */}
+      <Route path="/correction-ia" element={<CorrectionIA />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
