@@ -7,7 +7,11 @@ const app = express();
 const port = 5000; // Port fixe
 
 app.use(express.json());
-app.use(cors()); 
+// app.use(cors()); 
+app.use(cors({
+  origin: 'http://localhost:5173', // 🔐 Spécifie ton front
+  credentials: true               // 🔐 Autorise les cookies
+}));
 
 // 🔥 Définition manuelle des identifiants Supabase
 SUPABASE_URL="https://sfaastgptbcmxjmxyzjt.supabase.co"
@@ -31,7 +35,6 @@ const fetchUser = async () => {
   }
 };
 
-// Appel de la fonction pour récupérer l'utilisateur au démarrage
 
 
 
@@ -58,31 +61,6 @@ app.get("/", (req, res) => {
   res.send("Bienvenue sur l'API Express pour le projet de BD!");
 });
 
-// Ajouter un exercice (Professeur uniquement)
-
-//Version fonctionnelle
-// app.post('/exercices', upload.single('pdf'), async (req, res) => {
-//     const { commentaire, date_limite } = req.body;
-//     const { file } = req;
-
-//     if (!file) {
-//         return res.status(400).json({ error: 'Fichier PDF requis' });
-//     }
-
-//     const { data, error } = await supabase.storage.from('exercices').upload(`exercice_${Date.now()}.pdf`, file.buffer, {
-//         contentType: file.mimetype
-//     });
-
-//     if (error) return res.status(500).json({ error: error.message });
-
-//     const { data: insertData, error: insertError } = await supabase.from('exercices').insert([
-//         {pdf_url: data.path, commentaire, date_limite }
-//     ]);
-
-//     if (insertError) return res.status(500).json({ error: insertError.message });
-
-//     res.status(201).json({ message: 'Exercice ajouté', exercice: insertData });
-// });
 
 // Fonction pour générer l'URL publique
 const generatePublicUrl = (bucket, filePath) => {
@@ -91,9 +69,10 @@ const generatePublicUrl = (bucket, filePath) => {
 
 // Route pour l'upload
 app.post('/exercices', upload.single('pdf'), async (req, res) => {
-    const { commentaire, date_limite,professeur_id } = req.body;
+    const { commentaire, date_limite,professeur_id,titre } = req.body;
     console.log("Proff reçu" , professeur_id)
   const { file } = req;
+  console.log("le titre : ", titre, "le commentaire : ", commentaire, "la date limite : ", date_limite)
   const BUCKET_NAME = "exercices"; // Définir le bucket ici
 
   if (!file) {
@@ -128,9 +107,9 @@ console.log("le prof est : ", professeur_id)
 
   // Insérer dans la BDD
   const { data: insertData, error: insertError } = await supabase.from('exercices').insert([
-      { pdf_url: publicURL, commentaire, date_limite,professeur_id }
-  ]);
-
+      { pdf_url: publicURL, commentaire, date_limite,professeur_id, titre }
+  ]).select();
+  console.log("Données insérées :", insertData);
   if (insertError) {
       console.error("Erreur lors de l'insertion dans la base de données :", insertError);
       return res.status(500).json({ error: insertError.message });
@@ -160,30 +139,6 @@ app.get('/exercices/:id', async (req, res) => {
     res.json(data);
 });
 
-// Soumettre un rapport (Étudiant)
-// app.post('/exercices/:id/submit', upload.single('pdf'), async (req, res) => {
-//     const { etudiant_id } = req.body;
-//     const { file } = req;
-//     const { id } = req.params;
-
-//     if (!file) {
-//         return res.status(400).json({ error: 'Fichier PDF requis' });
-//     }
-
-//     const { data, error } = await supabase.storage.from('rapports').upload(`rapport_${Date.now()}.pdf`, file.buffer, {
-//         contentType: file.mimetype
-//     });
-
-//     if (error) return res.status(500).json({ error: error.message });
-
-//     const { data: insertData, error: insertError } = await supabase.from('rapports').insert([
-//         { exercice_id: id, etudiant_id, pdf_url: data.path }
-//     ]);
-
-//     if (insertError) return res.status(500).json({ error: insertError.message });
-
-//     res.status(201).json({ message: 'Rapport soumis', rapport: insertData });
-// });
 
 app.post('/exercices/:id/submit', upload.single('pdf'), async (req, res) => {
     const { etudiant_id, exercice_id, } = req.body; // L'ID de l'étudiant (en supposant qu'il est envoyé dans le corps de la requête)
@@ -436,6 +391,7 @@ app.post("/:submissionId/noter", async (req, res) => {
     const { data, error } = await supabase
       .from("notes")
       .insert({ note_professeur: grade, note_ia : grade , soumission_id : submissionId , exercice_id : exerciseId})
+      .select()
       ;
 
     console.log("Données insérées :", data);
@@ -455,6 +411,96 @@ app.post("/:submissionId/noter", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 });
+
+
+//Voir toutes les notes données par le prof
+app.get('/professeur/notes', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        note_finale,
+        soumission_id,
+        exercice_id,
+        soumissions (
+          id,
+          etudiant_id,
+          exercice_id,
+          etudiants (
+            nom
+          )
+        )
+      `);
+
+    if (error) {
+      console.error("Erreur récupération des notes :", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    const notes = data.map(n => ({
+      exercice: `Exercice ${n.exercice_id}`,
+      etudiant: n.soumissions?.etudiants?.nom || 'Étudiant inconnu',
+      note: n.note_finale ?? 'Non notée'
+    }));
+
+    res.json(notes);
+  } catch (err) {
+    console.error("Erreur serveur :", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+});
+
+//Récupérer les notes d'un étudiant
+app.get('/etudiant/:id/notes', async (req, res) => {
+  const { id } = req.params; // Récupère l'ID de l'étudiant à partir des paramètres de l'URL
+
+  try {
+    // Récupérer les notes de l'étudiant via Supabase
+    const { data, error } = await supabase
+      .from('notes')
+      .select(`
+        note_finale,
+        soumission_id,
+        exercice_id,
+        soumissions (
+          id,
+          etudiant_id,
+          exercice_id,
+          exercices (
+            pdf_url,
+            commentaire,
+            date_limite
+          )
+        )
+      `)
+      .eq('soumissions.etudiant_id', id); // Filtrer par l'ID de l'étudiant
+
+    // Vérifier s'il y a des erreurs
+    if (error) {
+      console.error("Erreur récupération des notes :", error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Vérifier si l'étudiant a des notes
+    if (data && data.length > 0) {
+      const notes = data.map(n => ({
+        exercice: `Exercice ${n.exercice_id}`,
+        pdf_url: n.soumissions?.exercices?.pdf_url || 'URL PDF non disponible',
+        commentaire: n.soumissions?.exercices?.commentaire || 'Aucun commentaire',
+        date_limite: n.soumissions?.exercices?.date_limite || 'Date limite non définie',
+        note: n.note_finale ?? 'Non notée',
+      }));
+      
+      res.json(notes);
+    } else {
+      res.status(404).json({ message: 'Aucune note trouvée pour cet étudiant' });
+    }
+  } catch (err) {
+    console.error("Erreur serveur :", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+});
+
 
 
 app.listen(port, () => {

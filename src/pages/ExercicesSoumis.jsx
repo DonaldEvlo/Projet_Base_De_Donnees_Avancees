@@ -1,14 +1,15 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  FaUser,
+  FaCheckCircle,
   FaChevronDown,
   FaChevronUp,
-  FaCheckCircle,
   FaFileDownload,
+  FaUser,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { getEtudiantById } from "../../backend/services/authServices";
 import supabase from "../../supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ExercicesSoumis = () => {
   const [exercises, setExercises] = useState([]);
@@ -150,7 +151,17 @@ const ExercicesSoumis = () => {
         return;
       }
 
-      setSubmissions(data);
+      // Récupérer les informations des étudiants pour chaque soumission
+      const enhancedSubmissions = await Promise.all(data.map(async (submission) => {
+        const etudiantInfo = await getEtudiantById(submission.etudiant_id, 'etudiants');
+        return {
+          ...submission,
+          studentName: etudiantInfo ? etudiantInfo.nom : "Étudiant inconnu",
+          studentEmail: etudiantInfo ? etudiantInfo.email : null,
+        };
+      }));
+
+      setSubmissions(enhancedSubmissions);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -414,7 +425,7 @@ const ExercicesSoumis = () => {
                 variants={itemVariants}
                 className="text-2xl font-bold text-gray-100 dark:text-white mb-4"
               >
-                Soumissions pour l'exercice "{selectedExercise.titre}"
+                Soumissions pour l'exercice {selectedExercise.titre ?? selectedExercise.id}
               </motion.h3>
 
               {loading ? (

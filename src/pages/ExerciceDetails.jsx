@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { checkIfExerciceSoumis } from "../../backend/services/authServices"; // Importer la fonction pour vérifier si l'exercice a déjà été soumis
 import supabase from "../../supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 function ExerciseDetail() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ function ExerciseDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false); 
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +49,20 @@ function ExerciseDetail() {
     fetchUser();
   }, [id]);
 
+  useEffect(() => {
+    const checkSubmission = async () => {
+      if (userId && exercice) {
+        const submission = await checkIfExerciceSoumis(userId, exercice.id);
+        if (submission) {
+          setAlreadySubmitted(true);
+        } else {
+          setAlreadySubmitted(false);
+        }
+      }
+    };
+    checkSubmission();
+  }, [userId, exercice]);
+
   const handleFileChange = (event) => {
     setSubmittedFile(event.target.files[0]);
     // Animation de succès lors de la sélection d'un fichier
@@ -58,6 +74,11 @@ function ExerciseDetail() {
 
   const handleSubmitWork = async (event) => {
     event.preventDefault();
+    if (alreadySubmitted) {
+      setMessage("Vous avez déjà soumis ce travail.");
+      return;
+    }
+
     if (!submittedFile || !userId) {
       setMessage("Veuillez sélectionner un fichier PDF et être connecté.");
       return;
@@ -172,41 +193,41 @@ function ExerciseDetail() {
             className="flex gap-3"
           >
             <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/dashboard-etudiant")}
-            className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
-            type="button"
-          >
-            <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 1024 1024"
-                height="25px"
-                width="25px"
-              >
-                <path
-                  d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
-                  fill="#000000"
-                ></path>
-                <path
-                  d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
-                  fill="#000000"
-                ></path>
-              </svg>
-            </div>
-            <p className="translate-x-2">Go Back</p>
-          </motion.button>
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/dashboard-etudiant")}
+              className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+              type="button"
+            >
+              <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 1024 1024"
+                  height="25px"
+                  width="25px"
+                >
+                  <path
+                    d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                    fill="#000000"
+                  ></path>
+                  <path
+                    d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                    fill="#000000"
+                  ></path>
+                </svg>
+              </div>
+              <p className="translate-x-2">Go Back</p>
+            </motion.button>
             <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
-            <input
-              className="peer sr-only"
-              id="darkModeToggle"
-              type="checkbox"
-              checked={darkMode}
-              onChange={toggleDarkMode}
-            />
-            <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
-          </label>
+              <input
+                className="peer sr-only"
+                id="darkModeToggle"
+                type="checkbox"
+                checked={darkMode}
+                onChange={toggleDarkMode}
+              />
+              <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+            </label>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -323,77 +344,90 @@ function ExerciseDetail() {
                     >
                       Soumettre votre travail
                     </motion.h3>
-                    <motion.form 
-                      variants={itemVariants}
-                      onSubmit={handleSubmitWork} 
-                      className="space-y-5"
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
+                    
+                    {alreadySubmitted ? (
                       <motion.div
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={triggerFileInput}
-                        className="border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-500 dark:hover:border-gray-400 transition-all duration-200 bg-white/70 dark:bg-zinc-900/70"
+                        variants={itemVariants}
+                        className="bg-yellow-100 dark:bg-yellow-800/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-5 shadow-md"
                       >
-                        <motion.div
-                          animate={{ 
-                            y: [0, -5, 0],
-                            transition: {
-                              y: {
-                                repeat: Infinity,
-                                duration: 2,
-                                ease: "easeInOut"
-                              }
-                            }
-                          }}
-                          className="text-4xl mb-2"
-                        >
-                          📄
-                        </motion.div>
-                        <p className="text-center text-gray-700 dark:text-gray-300">
-                          {submittedFile 
-                            ? `Fichier sélectionné : ${submittedFile.name}` 
-                            : "Cliquez pour sélectionner votre fichier PDF"}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Format accepté : PDF
+                        <div className="flex items-center justify-center text-2xl mb-2">⚠️</div>
+                        <p className="text-center text-yellow-700 dark:text-yellow-400 font-medium">
+                          Vous avez déjà soumis ce travail.
                         </p>
                       </motion.div>
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        type="submit"
-                        disabled={isSubmitting || !submittedFile}
-                        className={`w-full flex items-center justify-center gap-2 ${
-                          isSubmitting || !submittedFile
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800"
-                        } text-white font-semibold py-3 px-4 rounded-md transition shadow-md`}
+                    ) : (
+                      <motion.form 
+                        variants={itemVariants}
+                        onSubmit={handleSubmitWork} 
+                        className="space-y-5"
                       >
-                        {isSubmitting ? (
-                          <>
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                              className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                            />
-                            <span>Soumission en cours...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>✅</span>
-                            <span>Soumettre mon travail</span>
-                          </>
-                        )}
-                      </motion.button>
-                    </motion.form>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="application/pdf"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={triggerFileInput}
+                          className="border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-500 dark:hover:border-gray-400 transition-all duration-200 bg-white/70 dark:bg-zinc-900/70"
+                        >
+                          <motion.div
+                            animate={{ 
+                              y: [0, -5, 0],
+                              transition: {
+                                y: {
+                                  repeat: Infinity,
+                                  duration: 2,
+                                  ease: "easeInOut"
+                                }
+                              }
+                            }}
+                            className="text-4xl mb-2"
+                          >
+                            📄
+                          </motion.div>
+                          <p className="text-center text-gray-700 dark:text-gray-300">
+                            {submittedFile 
+                              ? `Fichier sélectionné : ${submittedFile.name}` 
+                              : "Cliquez pour sélectionner votre fichier PDF"}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Format accepté : PDF
+                          </p>
+                        </motion.div>
+                        
+                        <motion.button
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          type="submit"
+                          disabled={isSubmitting || !submittedFile}
+                          className={`w-full flex items-center justify-center gap-2 ${
+                            isSubmitting || !submittedFile
+                              ? "bg-gray-400 cursor-not-allowed"
+                              : "bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800"
+                          } text-white font-semibold py-3 px-4 rounded-md transition shadow-md`}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                              />
+                              <span>Soumission en cours...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>✅</span>
+                              <span>Soumettre mon travail</span>
+                            </>
+                          )}
+                        </motion.button>
+                      </motion.form>
+                    )}
 
                     <AnimatePresence>
                       {message && (
