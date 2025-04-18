@@ -612,6 +612,153 @@ app.get('/performances', async (req, res) => {
   }
 });
 
+//Performances des étudiants
+app.get('/performance-etudiants', async (req, res) => {
+  try {
+    // Récupérer le nombre total d'étudiants
+    const { data: etudiantsData, error: etudiantsError } = await supabase
+      .from('etudiants')
+      .select('count');
+    
+    if (etudiantsError) throw etudiantsError;
+    
+    const totalEtudiants = parseInt(etudiantsData[0].count);
+    
+    // Récupérer toutes les notes
+    const { data: notesData, error: notesError } = await supabase
+      .from('notes')
+      .select(`
+        note_finale,
+        soumission_id,
+        exercice_id,
+        soumissions (
+          etudiant_id,
+          date_soumission,
+          etudiants (
+            nom
+          )
+        )
+      `);
+    
+    if (notesError) throw notesError;
+    
+    // Récupérer les exercices
+    const { data: exercicesData, error: exercicesError } = await supabase
+      .from('exercices')
+      .select('id, commentaire');
+    
+    if (exercicesError) throw exercicesError;
+    
+    // Calculer la moyenne des notes (sur 20)
+    const totalNotes = notesData.reduce((sum, note) => sum + note.note_finale, 0);
+    const averageScore = notesData.length > 0 ? (totalNotes / notesData.length) : 0; // Garder la note sur 20
+    
+    // Calculer le taux de complétion (en pourcentage)
+    const totalSoumissions = notesData.length;
+    const totalPossibleSoumissions = totalEtudiants * exercicesData.length;
+    const completionRate = totalPossibleSoumissions > 0 
+      ? Math.round((totalSoumissions / totalPossibleSoumissions) * 100) 
+      : 0;
+    
+    // Récupérer les soumissions récentes (dernières 24 heures)
+    const hier = new Date();
+    hier.setDate(hier.getDate() - 1);
+    
+    const soumissionsRecentes = notesData.filter(note => 
+      new Date(note.soumissions.date_soumission) > hier
+    ).length;
+    
+    // Trouver les meilleurs étudiants
+    // Créer un dictionnaire pour stocker les moyennes par étudiant
+    const etudiantsMoyennes = {};
+    
+    notesData.forEach(note => {
+      const etudiantId = note.soumissions.etudiant_id;
+      const etudiantNom = note.soumissions.etudiants.nom;
+      
+      if (!etudiantsMoyennes[etudiantId]) {
+        etudiantsMoyennes[etudiantId] = {
+          id: etudiantId,
+          name: etudiantNom,
+          avatar: etudiantNom.split(' ').map(n => n[0]).join('').toUpperCase(),
+          totalScore: 0,
+          count: 0
+        };
+      }
+      
+      etudiantsMoyennes[etudiantId].totalScore += note.note_finale;
+      etudiantsMoyennes[etudiantId].count += 1;
+    });
+    
+    // Calculer la moyenne pour chaque étudiant (sur 20)
+    const etudiantsAvecMoyennes = Object.values(etudiantsMoyennes).map(etudiant => {
+      return {
+        ...etudiant,
+        score: parseFloat((etudiant.totalScore / etudiant.count).toFixed(2)) // Moyenne sur 20 avec 2 décimales
+      };
+    });
+    
+    // Trier et récupérer les 3 meilleurs
+    const topPerformers = etudiantsAvecMoyennes
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+    
+    // Récupérer les étudiants en difficulté (moyenne < 10/20)
+    const needHelp = etudiantsAvecMoyennes
+      .filter(etudiant => etudiant.score < 10)
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 5);  // Limiter à 5 étudiants max
+    
+    // Statistiques par exercice
+    const exerciceStats = {};
+    
+    exercicesData.forEach(exercice => {
+      exerciceStats[exercice.id] = {
+        name: exercice.commentaire || `Exercice ${exercice.id}`,
+        submissions: 0,
+        totalScore: 0,
+        count: 0
+      };
+    });
+    
+    // Remplir les stats pour chaque exercice
+    notesData.forEach(note => {
+      if (exerciceStats[note.exercice_id]) {
+        exerciceStats[note.exercice_id].submissions += 1;
+        exerciceStats[note.exercice_id].totalScore += note.note_finale;
+        exerciceStats[note.exercice_id].count += 1;
+      }
+    });
+    
+    // Calculer les moyennes et taux de complétion par exercice
+    const courseStats = Object.values(exerciceStats).map(stat => {
+      return {
+        name: stat.name,
+        averageScore: stat.count > 0 ? parseFloat((stat.totalScore / stat.count).toFixed(2)) : 0, // Sur 20
+        submissions: stat.submissions,
+        completion: Math.round((stat.submissions / totalEtudiants) * 100) // Le taux de complétion reste en pourcentage
+      };
+    });
+    
+    // Créer l'objet de réponse
+    const responseData = {
+      averageScore: parseFloat(averageScore.toFixed(2)), // Moyenne sur 20 avec 2 décimales
+      totalStudents: totalEtudiants,
+      completionRate: completionRate, // En pourcentage
+      recentSubmissions: soumissionsRecentes,
+      topPerformers: topPerformers, // Note sur 20
+      needHelp: needHelp, // Note sur 20
+      courseStats: courseStats // Note sur 20
+    };
+    
+    res.json(responseData);
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la récupération des données' });
+  }
+});
+
 app.listen(port, () => {
     console.log(`Serveur démarré sur http://localhost:${port}`); 
 });
