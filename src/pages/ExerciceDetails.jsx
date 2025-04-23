@@ -16,7 +16,7 @@ function ExerciseDetail() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isPageLoaded, setIsPageLoaded] = useState(false);
-  const [alreadySubmitted, setAlreadySubmitted] = useState(false); 
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -130,9 +130,9 @@ function ExerciseDetail() {
       opacity: 1,
       transition: {
         duration: 0.5,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const itemVariants = {
@@ -140,13 +140,15 @@ function ExerciseDetail() {
     visible: {
       y: 0,
       opacity: 1,
-      transition: { type: "spring", stiffness: 100 }
-    }
+      transition: { type: "spring", stiffness: 100 },
+    },
   };
 
   return (
     <div
-      className={`${darkMode ? "dark" : ""} relative min-h-screen transition-colors duration-500`}
+      className={`${
+        darkMode ? "dark" : ""
+      } relative min-h-screen transition-colors duration-500`}
       style={{
         backgroundImage: `url("/images/etudiant.jpg")`,
         backgroundSize: "cover",
@@ -155,24 +157,26 @@ function ExerciseDetail() {
       }}
     >
       {/* Overlay avec animation de fondu */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.7 }}
         transition={{ duration: 1 }}
-        className={`absolute inset-0 ${darkMode ? 'bg-zinc-900' : 'bg-gray-800'} z-0`}
-        style={{ mixBlendMode: 'overlay' }}
+        className={`absolute inset-0 ${
+          darkMode ? "bg-zinc-900" : "bg-gray-800"
+        } z-0`}
+        style={{ mixBlendMode: "overlay" }}
       />
 
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col bg-gradient-to-b from-gray-50/80 to-white/80 dark:from-zinc-900/80 dark:to-black/80 transition-colors duration-500">
         {/* Header avec animation de glissement */}
-        <motion.header 
+        <motion.header
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 50 }}
           className="bg-gradient-to-r from-gray-700/95 to-gray-800/95 dark:from-zinc-900/95 dark:to-black/95 backdrop-blur-lg py-5 px-8 shadow-lg flex justify-between items-center"
         >
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
@@ -186,7 +190,7 @@ function ExerciseDetail() {
             </motion.span>
             <span className="ml-2">Plateforme SGBD</span>
           </motion.h1>
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
@@ -218,24 +222,69 @@ function ExerciseDetail() {
               </div>
               <p className="translate-x-2">Go Back</p>
             </motion.button>
-            <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
+            <label className="relative inline-flex items-center cursor-pointer self-center">
               <input
-                className="peer sr-only"
+                className="sr-only peer"
                 id="darkModeToggle"
                 type="checkbox"
                 checked={darkMode}
                 onChange={toggleDarkMode}
               />
-              <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+              <div
+                className={`relative w-14 h-8 rounded-full transition-colors duration-300 flex items-center ${
+                  darkMode ? "bg-gray-800" : "bg-blue-200"
+                }`}
+              >
+                <div
+                  className={`absolute size-6 flex items-center justify-center rounded-full transition-all duration-300 ${
+                    darkMode
+                      ? "translate-x-7 bg-gray-900"
+                      : "translate-x-1 bg-yellow-300"
+                  }`}
+                >
+                  {darkMode ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-white"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-yellow-600"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2" />
+                      <path d="M12 20v2" />
+                      <path d="m4.93 4.93 1.41 1.41" />
+                      <path d="m17.66 17.66 1.41 1.41" />
+                      <path d="M2 12h2" />
+                      <path d="M20 12h2" />
+                      <path d="m6.34 17.66-1.41 1.41" />
+                      <path d="m19.07 4.93-1.41 1.41" />
+                    </svg>
+                  )}
+                </div>
+              </div>
             </label>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleLogout}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md font-semibold transition shadow-md"
-            >
-              Déconnexion
-            </motion.button>
+
           </motion.div>
         </motion.header>
 
@@ -274,39 +323,44 @@ function ExerciseDetail() {
                   className="w-full max-w-6xl flex flex-col lg:flex-row gap-8 backdrop-blur-md bg-gradient-to-br from-white/95 to-gray-100/95 dark:from-zinc-900/95 dark:to-black/95 rounded-2xl shadow-2xl p-8 overflow-hidden border border-gray-200 dark:border-zinc-800"
                 >
                   {/* Détails exercice */}
-                  <motion.div 
-                    variants={itemVariants}
-                    className="flex-1"
-                  >
-                    <motion.h2 
+                  <motion.div variants={itemVariants} className="flex-1">
+                    <motion.h2
                       variants={itemVariants}
                       className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200"
                     >
                       Détails de l'exercice {exercice.id}
                     </motion.h2>
-                    <motion.p variants={itemVariants} className="mb-2 text-gray-800 dark:text-gray-300">
-                      <strong className="text-gray-700 dark:text-gray-300">Commentaire:</strong> {exercice.commentaire}
+                    <motion.p
+                      variants={itemVariants}
+                      className="mb-2 text-gray-800 dark:text-gray-300"
+                    >
+                      <strong className="text-gray-700 dark:text-gray-300">
+                        Commentaire:
+                      </strong>{" "}
+                      {exercice.commentaire}
                     </motion.p>
-                    <motion.p variants={itemVariants} className="text-gray-800 dark:text-gray-300">
-                      <strong className="text-gray-700 dark:text-gray-300">Date limite:</strong>{" "}
+                    <motion.p
+                      variants={itemVariants}
+                      className="text-gray-800 dark:text-gray-300"
+                    >
+                      <strong className="text-gray-700 dark:text-gray-300">
+                        Date limite:
+                      </strong>{" "}
                       {new Date(exercice.date_limite).toLocaleString()}
                     </motion.p>
 
                     {exercice.pdf_url && (
-                      <motion.div 
-                        variants={itemVariants}
-                        className="mt-6"
-                      >
+                      <motion.div variants={itemVariants} className="mt-6">
                         <h3 className="text-xl font-semibold mb-2 text-gray-700 dark:text-gray-300">
                           Aperçu du PDF :
                         </h3>
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 600, opacity: 1 }}
-                          transition={{ 
-                            duration: 0.5, 
+                          transition={{
+                            duration: 0.5,
                             height: { delay: 0.2, type: "spring" },
-                            opacity: { delay: 0.3 }
+                            opacity: { delay: 0.3 },
                           }}
                           className="overflow-hidden rounded-lg border border-gray-300 dark:border-zinc-700 shadow-lg"
                         >
@@ -338,27 +392,29 @@ function ExerciseDetail() {
                     variants={itemVariants}
                     className="w-full lg:w-1/3 p-6 bg-gradient-to-br from-white to-gray-50 dark:from-zinc-800 dark:to-zinc-900 shadow-xl rounded-xl border border-gray-200 dark:border-zinc-700"
                   >
-                    <motion.h3 
+                    <motion.h3
                       variants={itemVariants}
                       className="text-2xl font-semibold mb-5 text-gray-800 dark:text-gray-200"
                     >
                       Soumettre votre travail
                     </motion.h3>
-                    
+
                     {alreadySubmitted ? (
                       <motion.div
                         variants={itemVariants}
                         className="bg-yellow-100 dark:bg-yellow-800/30 border border-yellow-300 dark:border-yellow-700 rounded-lg p-5 shadow-md"
                       >
-                        <div className="flex items-center justify-center text-2xl mb-2">⚠️</div>
+                        <div className="flex items-center justify-center text-2xl mb-2">
+                          ⚠️
+                        </div>
                         <p className="text-center text-yellow-700 dark:text-yellow-400 font-medium">
                           Vous avez déjà soumis ce travail.
                         </p>
                       </motion.div>
                     ) : (
-                      <motion.form 
+                      <motion.form
                         variants={itemVariants}
-                        onSubmit={handleSubmitWork} 
+                        onSubmit={handleSubmitWork}
                         className="space-y-5"
                       >
                         <input
@@ -375,30 +431,30 @@ function ExerciseDetail() {
                           className="border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-gray-500 dark:hover:border-gray-400 transition-all duration-200 bg-white/70 dark:bg-zinc-900/70"
                         >
                           <motion.div
-                            animate={{ 
+                            animate={{
                               y: [0, -5, 0],
                               transition: {
                                 y: {
                                   repeat: Infinity,
                                   duration: 2,
-                                  ease: "easeInOut"
-                                }
-                              }
+                                  ease: "easeInOut",
+                                },
+                              },
                             }}
                             className="text-4xl mb-2"
                           >
                             📄
                           </motion.div>
                           <p className="text-center text-gray-700 dark:text-gray-300">
-                            {submittedFile 
-                              ? `Fichier sélectionné : ${submittedFile.name}` 
+                            {submittedFile
+                              ? `Fichier sélectionné : ${submittedFile.name}`
                               : "Cliquez pour sélectionner votre fichier PDF"}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                             Format accepté : PDF
                           </p>
                         </motion.div>
-                        
+
                         <motion.button
                           whileHover={{ scale: 1.03 }}
                           whileTap={{ scale: 0.97 }}
@@ -414,7 +470,11 @@ function ExerciseDetail() {
                             <>
                               <motion.div
                                 animate={{ rotate: 360 }}
-                                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                transition={{
+                                  repeat: Infinity,
+                                  duration: 1,
+                                  ease: "linear",
+                                }}
                                 className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                               />
                               <span>Soumission en cours...</span>
@@ -442,9 +502,7 @@ function ExerciseDetail() {
                               : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
                           } shadow-sm`}
                         >
-                          <p className="text-center font-medium">
-                            {message}
-                          </p>
+                          <p className="text-center font-medium">{message}</p>
                         </motion.div>
                       )}
                     </AnimatePresence>

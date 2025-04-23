@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { FaCalendarAlt, FaCommentDots, FaFileAlt, FaPen, FaArrowLeft } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaCommentDots,
+  FaFileAlt,
+  FaPen,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,7 +51,9 @@ const CreerExercice = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file || !professeurId) {
-      setMessage("Veuillez sélectionner un fichier et vous assurer que l'identifiant du professeur est disponible.");
+      setMessage(
+        "Veuillez sélectionner un fichier et vous assurer que l'identifiant du professeur est disponible."
+      );
       return;
     }
     setLoading(true);
@@ -69,7 +77,7 @@ const CreerExercice = () => {
         setFile(null);
         setComment("");
         setDeadline("");
-        
+
         // Afficher la notification de succès
         const notification = document.getElementById("notification");
         notification.classList.remove("hidden");
@@ -94,9 +102,9 @@ const CreerExercice = () => {
       transition: {
         when: "beforeChildren",
         staggerChildren: 0.1,
-        duration: 0.5
-      }
-    }
+        duration: 0.5,
+      },
+    },
   };
 
   const itemVariants = {
@@ -104,22 +112,24 @@ const CreerExercice = () => {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.4 }
-    }
+      transition: { duration: 0.4 },
+    },
   };
 
   const buttonVariants = {
-    hover: { 
+    hover: {
       scale: 1.05,
       boxShadow: "0px 0px 8px rgba(59, 130, 246, 0.7)",
-      transition: { duration: 0.3 }
+      transition: { duration: 0.3 },
     },
-    tap: { scale: 0.95 }
+    tap: { scale: 0.95 },
   };
 
   return (
     <div
-      className={`${darkMode ? "dark" : ""} min-h-screen flex flex-col relative overflow-hidden transition-colors duration-700`}
+      className={`${
+        darkMode ? "dark" : ""
+      } min-h-screen flex flex-col relative overflow-hidden transition-colors duration-700`}
     >
       {/* Fond animé */}
       <div
@@ -129,7 +139,9 @@ const CreerExercice = () => {
             "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/prof.png')",
           backgroundSize: "cover",
           backgroundPosition: "center 20%",
-          filter: darkMode ? "brightness(0.7) saturate(0.8)" : "brightness(1) saturate(1.1)",
+          filter: darkMode
+            ? "brightness(0.7) saturate(0.8)"
+            : "brightness(1) saturate(1.1)",
         }}
       >
         {/* Particules animées pour l'arrière-plan (effet visuel) */}
@@ -141,7 +153,7 @@ const CreerExercice = () => {
               initial={{
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight,
-                scale: Math.random() * 0.5 + 0.5
+                scale: Math.random() * 0.5 + 0.5,
               }}
               animate={{
                 x: Math.random() * window.innerWidth,
@@ -150,12 +162,12 @@ const CreerExercice = () => {
                   duration: Math.random() * 20 + 10,
                   repeat: Infinity,
                   repeatType: "reverse",
-                  ease: "linear"
-                }
+                  ease: "linear",
+                },
               }}
               style={{
                 width: `${Math.random() * 100 + 50}px`,
-                height: `${Math.random() * 100 + 50}px`
+                height: `${Math.random() * 100 + 50}px`,
               }}
             />
           ))}
@@ -225,15 +237,67 @@ const CreerExercice = () => {
             <p className="translate-x-2">Go Back</p>
           </motion.button>
 
-          <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
+          <label className="relative inline-flex items-center cursor-pointer self-center">
             <input
-              className="peer sr-only"
+              className="sr-only peer"
               id="darkModeToggle"
               type="checkbox"
               checked={darkMode}
               onChange={toggleDarkMode}
             />
-            <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+            <div
+              className={`relative w-14 h-8 rounded-full transition-colors duration-300 flex items-center ${
+                darkMode ? "bg-gray-800" : "bg-blue-200"
+              }`}
+            >
+              <div
+                className={`absolute size-6 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  darkMode
+                    ? "translate-x-7 bg-gray-900"
+                    : "translate-x-1 bg-yellow-300"
+                }`}
+              >
+                {darkMode ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-yellow-600"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                  </svg>
+                )}
+              </div>
+            </div>
           </label>
         </div>
       </motion.header>
@@ -246,19 +310,19 @@ const CreerExercice = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full"
         >
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="text-5xl font-extrabold text-gray-100 mb-6 text-center flex items-center justify-center gap-2"
           >
             <motion.span
-              animate={{ 
+              animate={{
                 rotate: [0, 10, -10, 10, 0],
                 transition: {
                   duration: 0.5,
-                  delay: 0.5
-                }
+                  delay: 0.5,
+                },
               }}
             >
               <FaPen className="text-blue-500" />
@@ -286,7 +350,7 @@ const CreerExercice = () => {
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -342,7 +406,8 @@ const CreerExercice = () => {
                       exit={{ opacity: 0, y: -10 }}
                       className="text-sm text-gray-300 mt-2"
                     >
-                      Fichier sélectionné : <span className="font-medium">{file.name}</span>
+                      Fichier sélectionné :{" "}
+                      <span className="font-medium">{file.name}</span>
                     </motion.p>
                   )}
                 </AnimatePresence>
@@ -409,9 +474,7 @@ const CreerExercice = () => {
                     transition={{ duration: 0.3 }}
                   />
                   {loading ? (
-                    <motion.span
-                      className="flex items-center justify-center gap-2"
-                    >
+                    <motion.span className="flex items-center justify-center gap-2">
                       <span className="loader-small"></span> Traitement...
                     </motion.span>
                   ) : (
@@ -421,7 +484,7 @@ const CreerExercice = () => {
               </motion.div>
             </motion.div>
           </form>
-          
+
           <AnimatePresence>
             {message && (
               <motion.p
@@ -451,7 +514,7 @@ const CreerExercice = () => {
           © 2025 Plateforme SGBD. Tous droits réservés.
         </p>
       </motion.footer>
-      
+
       {/* Styles CSS globaux pour les animations */}
       <style jsx global>{`
         .loader {
@@ -462,7 +525,7 @@ const CreerExercice = () => {
           height: 40px;
           animation: spin 1s linear infinite;
         }
-        
+
         .loader-small {
           border: 3px solid rgba(255, 255, 255, 0.3);
           border-radius: 50%;
@@ -471,21 +534,29 @@ const CreerExercice = () => {
           height: 16px;
           animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
         }
-        
+
         .fade-in {
           animation: fadeIn 0.5s ease-in-out;
         }
-        
+
         @keyframes fadeIn {
-          0% { opacity: 0; }
-          100% { opacity: 1; }
+          0% {
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
         }
-        
+
         /* Transition plus douce pour le mode sombre */
         .dark {
           transition: all 0.7s ease;

@@ -9,7 +9,10 @@ import {
   FaArrowRight,
   FaFileAlt,
   FaLaptopCode,
-  FaSearch
+  FaSearch,
+  FaChartLine,
+  FaTachometerAlt,
+  FaHome,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "../../backend/services/authServices";
@@ -27,7 +30,7 @@ const DashboardEtudiant = () => {
     return savedMode === "true";
   });
   // Ajout d'un état pour les données de performance
-  
+
   const searchInputRef = useRef(null);
   const headerRef = useRef(null);
 
@@ -170,6 +173,28 @@ const DashboardEtudiant = () => {
     tap: { scale: 0.95, transition: { duration: 0.1 } },
   };
 
+  const navButtonVariants = {
+    initial: { scale: 0.95, opacity: 0, y: 20 },
+    animate: (custom) => ({
+      scale: 1,
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: 0.3 + custom * 0.1,
+        type: "spring",
+        stiffness: 400,
+        damping: 10,
+      },
+    }),
+    hover: {
+      scale: 1.05,
+      y: -5,
+      boxShadow: "0 8px 15px -3px rgba(0, 0, 0, 0.3)",
+      transition: { type: "spring", stiffness: 400, damping: 10 },
+    },
+    tap: { scale: 0.95, transition: { duration: 0.1 } },
+  };
+
   const searchVariants = {
     initial: { width: "80%", opacity: 0 },
     animate: {
@@ -253,8 +278,6 @@ const DashboardEtudiant = () => {
       },
     },
   };
-
- 
 
   const progressBarVariants = {
     hidden: { width: 0 },
@@ -368,15 +391,67 @@ const DashboardEtudiant = () => {
         </motion.h1>
 
         <div className="flex gap-3">
-        <label className="relative inline-block h-8 w-14 cursor-pointer rounded-full bg-gray-300 transition [-webkit-tap-highlight-color:_transparent] has-[:checked]:bg-gray-900 self-center">
+          <label className="relative inline-flex items-center cursor-pointer self-center">
             <input
-              className="peer sr-only"
+              className="sr-only peer"
               id="darkModeToggle"
               type="checkbox"
               checked={darkMode}
               onChange={toggleDarkMode}
             />
-            <span className="absolute inset-y-0 start-0 m-1 size-6 rounded-full bg-gray-300 ring-[6px] ring-inset ring-white transition-all peer-checked:start-8 peer-checked:w-2 peer-checked:bg-white peer-checked:ring-transparent"></span>
+            <div
+              className={`relative w-14 h-8 rounded-full transition-colors duration-300 flex items-center ${
+                darkMode ? "bg-gray-800" : "bg-blue-200"
+              }`}
+            >
+              <div
+                className={`absolute size-6 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  darkMode
+                    ? "translate-x-7 bg-gray-900"
+                    : "translate-x-1 bg-yellow-300"
+                }`}
+              >
+                {darkMode ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-white"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-yellow-600"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                  </svg>
+                )}
+              </div>
+            </div>
           </label>
           <motion.button
             variants={buttonVariants}
@@ -392,6 +467,66 @@ const DashboardEtudiant = () => {
           </motion.button>
         </div>
       </motion.header>
+
+      {/* Navigation - Modified for horizontal layout similar to reference image */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="relative z-10 w-full flex justify-center mt-2 mb-6 px-6"
+      >
+        {/* Horizontal Navigation Bar */}
+        <div className="flex items-center gap-4 bg-white/30 dark:bg-gray-800/40 backdrop-blur-md rounded-lg p-1 shadow-lg">
+          {/* Vue d'ensemble navigation button */}
+          <motion.div
+            custom={1}
+            variants={navButtonVariants}
+            initial="initial"
+            animate="animate"
+            whileHover="hover"
+            whileTap="tap"
+            className="relative"
+          >
+            <Link
+              to="/dashboard-etudiant"
+              className="flex items-center bg-gradient-to-r from-blue-600 to-blue-500 text-white px-6 py-3 rounded-lg shadow-md transition-all"
+            >
+              <div className="bg-blue-500/30 p-2 rounded-full mr-3">
+                <FaHome className="text-lg" />
+              </div>
+              <span className="font-medium">Vue d'ensemble</span>
+
+              {/* Indicator for active page */}
+              <motion.div
+                className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-blue-300 rounded"
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.8, duration: 0.4 }}
+              />
+            </Link>
+          </motion.div>
+
+          {/* Performance navigation button */}
+          <motion.div
+            custom={2}
+            variants={navButtonVariants}
+            initial="initial"
+            animate="animate"
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Link
+              to="/mes-performances"
+              className="flex items-center bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-6 py-3 rounded-lg shadow-md transition-all"
+            >
+              <div className="bg-indigo-500/30 p-2 rounded-full mr-3">
+                <FaChartLine className="text-lg" />
+              </div>
+              <span className="font-medium">Performances</span>
+            </Link>
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* Main content */}
       <main className="relative z-10 flex-grow flex flex-col items-center py-8 px-4 md:px-6 lg:px-8 container mx-auto">
