@@ -615,6 +615,37 @@ app.get('/performances', async (req, res) => {
 //Performances des étudiants
 app.get('/performance-etudiants', async (req, res) => {
   try {
+    // Récupérer le token d'autorisation de l'en-tête
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Token d\'authentification manquant ou invalide' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    
+    // Vérifier et décoder le token avec Supabase
+    const { data: { user }, error: jwtError } = await supabase.auth.getUser(token);
+    
+    if (jwtError || !user) {
+      return res.status(401).json({ error: 'Token invalid ou expiré' });
+    }
+    
+    // Récupérer les informations du professeur à partir de l'ID utilisateur
+    const { data: professeur, error: professeurError } = await supabase
+      .from('professeurs')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+    
+    if (professeurError || !professeur) {
+      return res.status(401).json({ error: 'Professeur non trouvé' });
+    }
+    
+    const professeurId = professeur.id;
+    
+    // Le reste du code reste inchangé
+    
     // Récupérer le nombre total d'étudiants
     const { data: etudiantsData, error: etudiantsError } = await supabase
       .from('etudiants')
@@ -624,7 +655,31 @@ app.get('/performance-etudiants', async (req, res) => {
     
     const totalEtudiants = parseInt(etudiantsData[0].count);
     
-    // Récupérer toutes les notes
+    // Récupérer les exercices du professeur connecté
+    const { data: exercicesData, error: exercicesError } = await supabase
+      .from('exercices')
+      .select('id, commentaire')
+      .eq('professeur_id', professeurId);
+    
+    if (exercicesError) throw exercicesError;
+    
+    // Si aucun exercice trouvé pour ce professeur
+    if (exercicesData.length === 0) {
+      return res.json({
+        averageScore: 0,
+        totalStudents: totalEtudiants,
+        completionRate: 0,
+        recentSubmissions: 0,
+        topPerformers: [],
+        needHelp: [],
+        courseStats: []
+      });
+    }
+    
+    // Créer un tableau des IDs des exercices du professeur
+    const exerciceIds = exercicesData.map(ex => ex.id);
+    
+    // Récupérer toutes les notes pour les exercices du professeur connecté
     const { data: notesData, error: notesError } = await supabase
       .from('notes')
       .select(`
@@ -638,20 +693,14 @@ app.get('/performance-etudiants', async (req, res) => {
             nom
           )
         )
-      `);
+      `)
+      .in('exercice_id', exerciceIds);
     
     if (notesError) throw notesError;
     
-    // Récupérer les exercices
-    const { data: exercicesData, error: exercicesError } = await supabase
-      .from('exercices')
-      .select('id, commentaire');
-    
-    if (exercicesError) throw exercicesError;
-    
     // Calculer la moyenne des notes (sur 20)
     const totalNotes = notesData.reduce((sum, note) => sum + note.note_finale, 0);
-    const averageScore = notesData.length > 0 ? (totalNotes / notesData.length) : 0; // Garder la note sur 20
+    const averageScore = notesData.length > 0 ? (totalNotes / notesData.length) : 0;
     
     // Calculer le taux de complétion (en pourcentage)
     const totalSoumissions = notesData.length;
@@ -680,7 +729,8 @@ app.get('/performance-etudiants', async (req, res) => {
         etudiantsMoyennes[etudiantId] = {
           id: etudiantId,
           name: etudiantNom,
-          avatar: etudiantNom.split(' ').map(n => n[0]).join('').toUpperCase(),
+          // Modification: utilisez uniquement la première lettre du nom pour l'avatar
+          avatar: etudiantNom.charAt(0).toUpperCase(),
           totalScore: 0,
           count: 0
         };
@@ -694,7 +744,7 @@ app.get('/performance-etudiants', async (req, res) => {
     const etudiantsAvecMoyennes = Object.values(etudiantsMoyennes).map(etudiant => {
       return {
         ...etudiant,
-        score: parseFloat((etudiant.totalScore / etudiant.count).toFixed(2)) // Moyenne sur 20 avec 2 décimales
+        score: parseFloat((etudiant.totalScore / etudiant.count).toFixed(2))
       };
     });
     
@@ -707,7 +757,7 @@ app.get('/performance-etudiants', async (req, res) => {
     const needHelp = etudiantsAvecMoyennes
       .filter(etudiant => etudiant.score < 10)
       .sort((a, b) => a.score - b.score)
-      .slice(0, 5);  // Limiter à 5 étudiants max
+      .slice(0, 5);
     
     // Statistiques par exercice
     const exerciceStats = {};
@@ -732,23 +782,28 @@ app.get('/performance-etudiants', async (req, res) => {
     
     // Calculer les moyennes et taux de complétion par exercice
     const courseStats = Object.values(exerciceStats).map(stat => {
+      // Modification: conversion des notes en pourcentage pour correspondre au frontend
+      const averageScoreOnTwenty = stat.count > 0 ? (stat.totalScore / stat.count) : 0;
+      const averageScorePercent = Math.round((averageScoreOnTwenty / 20) * 100);
+      
       return {
         name: stat.name,
-        averageScore: stat.count > 0 ? parseFloat((stat.totalScore / stat.count).toFixed(2)) : 0, // Sur 20
+        // Le frontend attend les scores en pourcentage (0-100%)
+        averageScore: averageScorePercent,
         submissions: stat.submissions,
-        completion: Math.round((stat.submissions / totalEtudiants) * 100) // Le taux de complétion reste en pourcentage
+        completion: Math.round((stat.submissions / totalEtudiants) * 100)
       };
     });
     
     // Créer l'objet de réponse
     const responseData = {
-      averageScore: parseFloat(averageScore.toFixed(2)), // Moyenne sur 20 avec 2 décimales
+      averageScore: parseFloat(averageScore.toFixed(2)),
       totalStudents: totalEtudiants,
-      completionRate: completionRate, // En pourcentage
+      completionRate: completionRate,
       recentSubmissions: soumissionsRecentes,
-      topPerformers: topPerformers, // Note sur 20
-      needHelp: needHelp, // Note sur 20
-      courseStats: courseStats // Note sur 20
+      topPerformers: topPerformers,
+      needHelp: needHelp,
+      courseStats: courseStats
     };
     
     res.json(responseData);

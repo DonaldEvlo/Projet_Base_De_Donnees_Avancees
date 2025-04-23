@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
+  FaArrowLeft,
   FaBook,
   FaChartBar,
   FaChartLine,
@@ -8,15 +9,16 @@ import {
   FaExclamationTriangle,
   FaMedal,
   FaUserGraduate,
-  FaArrowLeft,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import supabase from "../../supabaseClient";
 
 const StudentPerformanceDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [performanceData, setPerformanceData] = useState(null);
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem("darkMode");
@@ -91,32 +93,96 @@ const StudentPerformanceDashboard = () => {
     },
   };
 
+  
+  // Vérifier l'authentification au chargement du composant
   useEffect(() => {
-    const fetchData = async () => {
+    const checkAuth = async () => {
       try {
-        // Changer l'URL par celle de votre API
-        const response = await fetch(
-          "http://localhost:5000/performance-etudiants"
-        );
-
-        if (!response.ok) {
-          throw new Error(`Erreur HTTP: ${response.status}`);
+        // Récupérer la session de l'utilisateur actuel
+        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        
+        if (authError) {
+          throw authError;
         }
 
-        const data = await response.json();
-        setPerformanceData(data);
-        showNotification("Données chargées avec succès", "success");
-        setLoading(false);
+        if (!session) {
+          throw new Error("Veuillez vous connecter pour accéder à cette page");
+        }
+
+        // Récupérer les détails du professeur à partir de l'ID utilisateur
+        const { data: professorData, error: professorError } = await supabase
+          .from('professeurs')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (professorError) {
+          throw professorError;
+        }
+
+        if (!professorData) {
+          throw new Error("Profil de professeur introuvable");
+        }
+
+        setUser({
+          id: professorData.id,
+          userId: session.user.id,
+          email: session.user.email,
+          name: professorData.nom || 'Professeur'
+        });
+
       } catch (err) {
-        console.error("Erreur lors de la récupération des données:", err);
-        setError("Impossible de charger les données de performance");
-        showNotification(`Erreur: ${err.message}`, "error");
+        console.error("Erreur d'authentification:", err);
+        setError("Veuillez vous connecter pour accéder à cette page");
         setLoading(false);
       }
     };
 
-    fetchData();
+    checkAuth();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return; // Ne pas exécuter si l'utilisateur n'est pas connecté
+      
+      try {
+        // Récupérer le token d'authentification
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          throw new Error("Session expirée");
+        }
+
+        // Changer l'URL par celle de votre API
+        const response = await fetch('http://localhost:5000/performance-etudiants', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}` // Envoyer le token pour l'authentification
+          }
+        });
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Non autorisé: veuillez vous reconnecter");
+          }
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setPerformanceData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des données:", err);
+        setError(err.message || "Impossible de charger les données de performance");
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
   // Fonction pour afficher les notifications
   const showNotification = (message, type = "info") => {

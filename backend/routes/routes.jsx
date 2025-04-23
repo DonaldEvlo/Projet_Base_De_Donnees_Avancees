@@ -15,8 +15,8 @@ import NotFound from "../../src/pages/notFound";
 import LoginEtudiant from "../../src/pages/signin etudiant";
 import LoginProf from "../../src/pages/signin prof";
 import Register from "../../src/pages/signup";
-import StudentPerformance from "../../src/pages/StudentPerformance"; // Import du nouveau composant
-import PerformanceDashboard from "../../src/pages/PerformanceDashboard"; // Import du nouveau composant
+import StudentPerformance from "../../src/pages/StudentPerformance";
+import PerformanceDashboard from "../../src/pages/PerformanceDashboard"; 
 import CorrectionIA from "../../src/pages/CorrectionIA";
 
 const AppRoutes = () => {
@@ -36,7 +36,7 @@ const AppRoutes = () => {
       <Route path="/mes-notes" element={<NotesEtudiant />} />
       <Route path="/notes-attribuées" element={<NotesParProf />} />
       <Route path="/login" element={<ChooseRole />} />
-      <Route path="/student-performance" element={<StudentPerformance />} /> {/* Nouvelle route */}
+      <Route path="/student-performance" element={<StudentPerformance />} /> 
       <Route path="/correction-ia" element={<CorrectionIA />} />
       <Route path="/mes-performances" element={<PerformanceDashboard />} />
       <Route path="*" element={<NotFound />} />
