@@ -7,6 +7,7 @@ import {
   FaExclamationTriangle,
   FaMedal,
   FaUserGraduate,
+  FaArrowDown,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -95,15 +96,15 @@ const NotesEtudiant = () => {
     const fetchUser = async () => {
       try {
         const { data, error } = await supabase.auth.getUser();
-        
+
         if (error) {
           throw new Error("Erreur lors de la récupération de l'utilisateur");
-        } 
-        
+        }
+
         if (data?.user) {
           setUserId(data.user.id);
         } else {
-          throw new Error('Utilisateur non connecté');
+          throw new Error("Utilisateur non connecté");
         }
       } catch (err) {
         console.error("Erreur d'authentification:", err);
@@ -111,33 +112,41 @@ const NotesEtudiant = () => {
         setLoading(false);
       }
     };
-    
+
     fetchUser();
   }, []);
-  
+
   useEffect(() => {
     if (userId) {
       const fetchExercicesEtNotes = async () => {
         try {
           // Récupérer le token d'authentification
-          const { data: { session } } = await supabase.auth.getSession();
-          
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+
           if (!session) {
             throw new Error("Session expirée");
           }
 
-          const response = await fetch(`http://localhost:5000/etudiant/${userId}/notes`, {
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`
+          const response = await fetch(
+            `http://localhost:5000/etudiant/${userId}/notes`,
+            {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
             }
-          });
-          
+          );
+
           const data = await response.json();
-          
+
           if (response.ok) {
             setExercices(data);
           } else {
-            throw new Error(data.message || 'Erreur lors de la récupération des exercices et notes');
+            throw new Error(
+              data.message ||
+                "Erreur lors de la récupération des exercices et notes"
+            );
           }
         } catch (err) {
           console.error("Erreur:", err);
@@ -146,7 +155,7 @@ const NotesEtudiant = () => {
           setLoading(false);
         }
       };
-      
+
       fetchExercicesEtNotes();
     }
   }, [userId]);
@@ -160,15 +169,17 @@ const NotesEtudiant = () => {
   // Calcul des statistiques
   const calculateStats = () => {
     if (exercices.length === 0) return { moyenne: 0, max: 0, min: 0 };
-    
-    const notes = exercices.map(ex => ex.note).filter(note => note !== null);
+
+    const notes = exercices
+      .map((ex) => ex.note)
+      .filter((note) => note !== null);
     if (notes.length === 0) return { moyenne: 0, max: 0, min: 0 };
-    
+
     const sum = notes.reduce((acc, note) => acc + note, 0);
     return {
       moyenne: (sum / notes.length).toFixed(2),
       max: Math.max(...notes),
-      min: Math.min(...notes)
+      min: Math.min(...notes),
     };
   };
 
@@ -452,19 +463,21 @@ const NotesEtudiant = () => {
               className="bg-white/90 dark:bg-gray-700/90 p-6 rounded-xl shadow-lg relative overflow-hidden hover:shadow-xl transition"
             >
               <div className="relative z-10 flex items-center gap-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                  <FaChartBar className="text-2xl text-blue-500" />
+                <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <FaArrowDown className="text-2xl text-red-500" />
                 </div>
                 <div>
                   <h4 className="text-2xl font-bold text-gray-800 dark:text-white">
                     {stats.moyenne}/20
                   </h4>
-                  <p className="text-gray-500 dark:text-gray-300">Note Moyenne</p>
+                  <p className="text-gray-500 dark:text-gray-300">
+                    Faible Note
+                  </p>
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 h-1 bg-gray-200 dark:bg-gray-600 w-full">
                 <motion.div
-                  className="h-full bg-blue-500"
+                  className="h-full bg-red-500"
                   initial={{ width: 0 }}
                   animate={{ width: `${(stats.moyenne / 20) * 100}%` }}
                   transition={{ delay: 0.5, duration: 0.8 }}
@@ -485,7 +498,9 @@ const NotesEtudiant = () => {
                   <h4 className="text-2xl font-bold text-gray-800 dark:text-white">
                     {stats.max}/20
                   </h4>
-                  <p className="text-gray-500 dark:text-gray-300">Meilleure Note</p>
+                  <p className="text-gray-500 dark:text-gray-300">
+                    Meilleure Note
+                  </p>
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 h-1 bg-gray-200 dark:bg-gray-600 w-full">
@@ -504,14 +519,20 @@ const NotesEtudiant = () => {
               className="bg-white/90 dark:bg-gray-700/90 p-6 rounded-xl shadow-lg relative overflow-hidden hover:shadow-xl transition"
             >
               <div className="relative z-10 flex items-center gap-4">
-                <div className={`p-3 bg-${performance.color}-100 dark:bg-${performance.color}-900/30 rounded-lg`}>
-                  <FaBook className={`text-2xl text-${performance.color}-500`} />
+                <div
+                  className={`p-3 bg-${performance.color}-100 dark:bg-${performance.color}-900/30 rounded-lg`}
+                >
+                  <FaBook
+                    className={`text-2xl text-${performance.color}-500`}
+                  />
                 </div>
                 <div>
                   <h4 className="text-2xl font-bold text-gray-800 dark:text-white">
                     {performance.text}
                   </h4>
-                  <p className="text-gray-500 dark:text-gray-300">Performance Globale</p>
+                  <p className="text-gray-500 dark:text-gray-300">
+                    Performance Globale
+                  </p>
                 </div>
               </div>
               <div className="absolute bottom-0 left-0 h-1 bg-gray-200 dark:bg-gray-600 w-full">
@@ -543,7 +564,9 @@ const NotesEtudiant = () => {
                 className="text-center py-10 text-gray-500 dark:text-gray-400"
               >
                 <FaExclamationTriangle className="text-4xl mx-auto mb-4 text-yellow-500" />
-                <p className="text-lg">Aucun exercice disponible pour le moment.</p>
+                <p className="text-lg">
+                  Aucun exercice disponible pour le moment.
+                </p>
               </motion.div>
             ) : (
               <motion.div
@@ -557,7 +580,9 @@ const NotesEtudiant = () => {
                     <tr className="bg-gray-100 dark:bg-gray-800 text-left">
                       <th className="py-3 px-6 rounded-tl-lg">Exercice</th>
                       <th className="py-3 px-6">Titre</th>
-                      <th className="py-3 px-6 rounded-tr-lg text-center">Note</th>
+                      <th className="py-3 px-6 rounded-tr-lg text-center">
+                        Note
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -565,28 +590,40 @@ const NotesEtudiant = () => {
                       <motion.tr
                         key={item.exercice_id}
                         initial={{ opacity: 0, y: 10 }}
-                        animate={{ 
-                          opacity: 1, 
+                        animate={{
+                          opacity: 1,
                           y: 0,
-                          transition: { delay: 0.1 + index * 0.05 } 
+                          transition: { delay: 0.1 + index * 0.05 },
                         }}
                         className={`border-b dark:border-gray-600 ${
-                          index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-800/50' : ''
+                          index % 2 === 0
+                            ? "bg-gray-50 dark:bg-gray-800/50"
+                            : ""
                         } hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors`}
                       >
                         <td className="py-4 px-6">{item.exercice}</td>
                         <td className="py-4 px-6">{item.titre}</td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`px-3 py-1 rounded-full font-medium ${
-                            !item.note ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300' :
-                            item.note >= 16 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                            item.note >= 14 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300' :
-                            item.note >= 12 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
-                            item.note >= 10 ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300' :
-                            item.note >= 8 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                          }`}>
-                            {item.note !== null ? `${item.note}/20` : 'Non noté'}
+                          <span
+                            className={`px-3 py-1 rounded-full font-medium ${
+                              !item.note
+                                ? "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300"
+                                : item.note >= 16
+                                ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                                : item.note >= 14
+                                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300"
+                                : item.note >= 12
+                                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                                : item.note >= 10
+                                ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300"
+                                : item.note >= 8
+                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
+                                : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
+                            }`}
+                          >
+                            {item.note !== null
+                              ? `${item.note}/20`
+                              : "Non noté"}
                           </span>
                         </td>
                       </motion.tr>
@@ -609,8 +646,8 @@ const NotesEtudiant = () => {
           >
             <motion.button
               whileHover={{ scale: 1.03, y: -3 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/mes-performances")}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 mx-auto"
             >
               <FaChartBar />

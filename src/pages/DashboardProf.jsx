@@ -689,8 +689,8 @@ const DashboardProf = () => {
                         icon={
                           <FaChartLine className="text-5xl text-purple-500 mb-2" />
                         }
-                        label="Notes"
-                        description="Consultez les notes attriuées"
+                        label="Notes Attribuées"
+                        description="Consultez les notes attribuées aux étudiants"
                         onClick={() => handleNavigation("/notes-attribuées")}
                         variants={cardVariants}
                         delay={0.4}

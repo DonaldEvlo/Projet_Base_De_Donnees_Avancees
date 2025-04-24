@@ -14,6 +14,7 @@ import {
   FaSearch
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { FaNoteSticky } from "react-icons/fa6";
 import { signOut } from "../../backend/services/authServices";
 
 const DashboardEtudiant = () => {
@@ -539,7 +540,7 @@ const DashboardEtudiant = () => {
               className="flex items-center bg-gradient-to-r from-indigo-700 to-indigo-500 text-white px-6 py-3 rounded-lg shadow-md transition-all"
             >
               <div className="bg-indigo-500/30 p-2 rounded-full mr-3">
-                <FaChartLine className="text-lg" />
+                <FaNoteSticky className="text-lg" />
               </div>
               <span className="font-medium">Mes notes</span>
             </Link>

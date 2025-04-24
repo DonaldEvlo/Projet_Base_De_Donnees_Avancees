@@ -533,7 +533,7 @@ const StudentPerformanceDashboard = () => {
               >
                 <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
                   <FaMedal className="text-yellow-500" />
-                  <span>Top Performers</span>
+                  <span>Top Performances</span>
                 </h3>
 
                 <div className="space-y-4">
@@ -587,6 +587,7 @@ const StudentPerformanceDashboard = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
                     className="px-4 py-2 bg-yellow-100 dark:bg-yellow-800/40 text-yellow-800 dark:text-yellow-200 rounded-md font-medium hover:bg-yellow-200 dark:hover:bg-yellow-700/50 transition-all"
                   >
                     Voir les performances détaillées
@@ -632,6 +633,8 @@ const StudentPerformanceDashboard = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
+                    onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
+
                           className="text-xs px-3 py-1 bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 rounded-full font-medium hover:bg-red-200 dark:hover:bg-red-700 transition-colors"
                         >
                           Contacter
@@ -652,6 +655,8 @@ const StudentPerformanceDashboard = () => {
                       <motion.button
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
+                    onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
+
                         className="mt-2 px-4 py-2 bg-red-100 dark:bg-red-800/40 text-red-800 dark:text-red-200 rounded-md font-medium hover:bg-red-200 dark:hover:bg-red-700/50 transition-all flex items-center gap-2 mx-auto"
                       >
                         <span>Voir tous les étudiants en difficulté</span>
@@ -743,6 +748,8 @@ const StudentPerformanceDashboard = () => {
                   <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
+                    onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
+
                     className="px-4 py-2 bg-indigo-100 dark:bg-indigo-800/40 text-indigo-800 dark:text-indigo-200 rounded-md font-medium hover:bg-indigo-200 dark:hover:bg-indigo-700/50 transition-all"
                   >
                     Rapport détaillé par Exercice
@@ -764,6 +771,7 @@ const StudentPerformanceDashboard = () => {
               <motion.button
                 whileHover={{ scale: 1.03, y: -3 }}
                 whileTap={{ scale: 0.97 }}
+                onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 mx-auto"
               >
                 <FaChartLine />
