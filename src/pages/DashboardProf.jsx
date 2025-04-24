@@ -9,14 +9,9 @@ import {
   FaBook,
   FaChalkboardTeacher,
   FaChartBar,
-  FaHome,
-  FaLaptopCode,
-  FaSignOutAlt,
-  FaUserGraduate,
   FaChartLine,
-  FaExclamationTriangle,
-  FaCheckCircle,
-  FaMedal,
+  FaLaptopCode,
+  FaSignOutAlt
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
@@ -688,6 +683,19 @@ const DashboardProf = () => {
                         delay={0.4}
                         darkMode={darkMode}
                         isActive={activePage === "/student-performance"}
+                      />
+
+                      <DashboardCard
+                        icon={
+                          <FaChartLine className="text-5xl text-purple-500 mb-2" />
+                        }
+                        label="Notes"
+                        description="Consultez les notes attriuées"
+                        onClick={() => handleNavigation("/notes-attribuées")}
+                        variants={cardVariants}
+                        delay={0.4}
+                        darkMode={darkMode}
+                        isActive={activePage === "/notes-attribuées"}
                       />
                     </motion.div>
                   </motion.div>

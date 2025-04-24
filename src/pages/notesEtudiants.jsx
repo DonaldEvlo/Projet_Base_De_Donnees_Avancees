@@ -1,41 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import supabase from '../../supabaseClient'; // Assure-toi que c'est bien initialisé
+import supabase from '../../supabaseClient';
 
 function NotesEtudiant() {
-  const [notes, setNotes] = useState([]);
+  const [exercices, setExercices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userId, setUserId] = useState(null);
-
+  
   useEffect(() => {
     const fetchUser = async () => {
       const { data, error } = await supabase.auth.getUser();
-
+      
       if (error) {
         setError("Erreur lors de la récupération de l'utilisateur");
         setLoading(false);
       } else if (data?.user) {
-        setUserId(data.user.id); // Assure-toi d'utiliser data.user.id
+        setUserId(data.user.id);
       } else {
         setError('Utilisateur non connecté');
         setLoading(false);
       }
     };
-
+    
     fetchUser();
   }, []);
-
+  
   useEffect(() => {
     if (userId) {
-      const fetchNotes = async () => {
+      const fetchExercicesEtNotes = async () => {
         try {
           const response = await fetch(`http://localhost:5000/etudiant/${userId}/notes`);
           const data = await response.json();
-
+          
           if (response.ok) {
-            setNotes(data);
+            setExercices(data);
           } else {
-            setError(data.message || 'Erreur lors de la récupération des notes');
+            setError(data.message || 'Erreur lors de la récupération des exercices et notes');
           }
         } catch (err) {
           setError('Erreur serveur');
@@ -43,40 +43,34 @@ function NotesEtudiant() {
           setLoading(false);
         }
       };
-
-      fetchNotes();
+      
+      fetchExercicesEtNotes();
     }
   }, [userId]);
-
-  if (loading) return <div>Chargement des notes...</div>;
-  if (error) return <div>{error}</div>;
-
+  
+  if (loading) return <div>Chargement des exercices et notes...</div>;
+  if (error) return <div className="error-message">{error}</div>;
+  
   return (
-    <div>
-      <h2>Mes Notes</h2>
-      {notes.length === 0 ? (
-        <p>Aucune note trouvée pour cet étudiant.</p>
+    <div className="notes-container">
+      <h2>Mes Exercices et Notes</h2>
+      {exercices.length === 0 ? (
+        <p>Aucun exercice disponible.</p>
       ) : (
-        <table>
+        <table className="notes-table">
           <thead>
             <tr>
               <th>Exercice</th>
-              <th>Commentaire</th>
-              <th>PDF</th>
-              <th>Date Limite</th>
-              <th>Note Finale</th>
+              <th>Titre</th>
+              <th>Note</th>
             </tr>
           </thead>
           <tbody>
-            {notes.map((note, index) => (
-              <tr key={index}>
-                <td>{note.exercice}</td>
-                <td>{note.commentaire}</td>
-                <td>
-                  <a href={note.pdf_url} target="_blank" rel="noopener noreferrer">Télécharger</a>
-                </td>
-                <td>{new Date(note.date_limite).toLocaleDateString()}</td>
-                <td>{note.note}</td>
+            {exercices.map((item) => (
+              <tr key={item.exercice_id}>
+                <td>{item.exercice}</td>
+                <td>{item.titre}</td>
+                <td>{item.note}</td>
               </tr>
             ))}
           </tbody>

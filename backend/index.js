@@ -452,49 +452,52 @@ app.get('/professeur/notes', async (req, res) => {
 
 //Récupérer les notes d'un étudiant
 app.get('/etudiant/:id/notes', async (req, res) => {
-  const { id } = req.params; // Récupère l'ID de l'étudiant à partir des paramètres de l'URL
+  const { id } = req.params;
 
   try {
-    // Récupérer les notes de l'étudiant via Supabase
-    const { data, error } = await supabase
-      .from('notes')
+    // First, get all available exercises
+    const { data: exercices, error: exercicesError } = await supabase
+      .from('exercices')
+      .select('*')
+      .order('id');
+
+    if (exercicesError) {
+      console.error("Erreur récupération des exercices:", exercicesError);
+      return res.status(500).json({ error: exercicesError.message });
+    }
+
+    // Then, get the student's submissions and notes
+    const { data: soumissions, error: soumissionsError } = await supabase
+      .from('soumissions')
       .select(`
-        note_finale,
-        soumission_id,
+        id,
+        etudiant_id,
         exercice_id,
-        soumissions (
-          id,
-          etudiant_id,
-          exercice_id,
-          exercices (
-            pdf_url,
-            commentaire,
-            date_limite
-          )
+        notes (
+          note_finale
         )
       `)
-      .eq('soumissions.etudiant_id', id); // Filtrer par l'ID de l'étudiant
+      .eq('etudiant_id', id);
 
-    // Vérifier s'il y a des erreurs
-    if (error) {
-      console.error("Erreur récupération des notes :", error);
-      return res.status(500).json({ error: error.message });
+    if (soumissionsError) {
+      console.error("Erreur récupération des soumissions:", soumissionsError);
+      return res.status(500).json({ error: soumissionsError.message });
     }
 
-    // Vérifier si l'étudiant a des notes
-    if (data && data.length > 0) {
-      const notes = data.map(n => ({
-        exercice: `Exercice ${n.exercice_id}`,
-        pdf_url: n.soumissions?.exercices?.pdf_url || 'URL PDF non disponible',
-        commentaire: n.soumissions?.exercices?.commentaire || 'Aucun commentaire',
-        date_limite: n.soumissions?.exercices?.date_limite || 'Date limite non définie',
-        note: n.note_finale ?? 'Non notée',
-      }));
+    // Map exercises and merge with submission data
+    const notesEtExercices = exercices.map(exercice => {
+      // Find submission for this exercise if it exists
+      const soumission = soumissions?.find(s => s.exercice_id === exercice.id);
       
-      res.json(notes);
-    } else {
-      res.status(404).json({ message: 'Aucune note trouvée pour cet étudiant' });
-    }
+      return {
+        exercice_id: exercice.id,
+        exercice: `Exercice ${exercice.id}`,
+        titre: exercice.titre || 'Non défini', // Using titre instead of commentaire, with default value
+        note: soumission?.notes?.note_finale || 'Pas encore de note'
+      };
+    });
+    
+    res.json(notesEtExercices);
   } catch (err) {
     console.error("Erreur serveur :", err);
     res.status(500).json({ error: "Erreur interne du serveur" });

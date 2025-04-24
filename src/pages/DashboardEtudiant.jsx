@@ -7,12 +7,11 @@ import {
 import { useEffect, useRef, useState } from "react";
 import {
   FaArrowRight,
-  FaFileAlt,
-  FaLaptopCode,
-  FaSearch,
   FaChartLine,
-  FaTachometerAlt,
+  FaFileAlt,
   FaHome,
+  FaLaptopCode,
+  FaSearch
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "../../backend/services/authServices";
@@ -523,6 +522,26 @@ const DashboardEtudiant = () => {
                 <FaChartLine className="text-lg" />
               </div>
               <span className="font-medium">Performances</span>
+            </Link>
+          </motion.div>
+
+
+          <motion.div
+            custom={2}
+            variants={navButtonVariants}
+            initial="initial"
+            animate="animate"
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Link
+              to="/mes-notes"
+              className="flex items-center bg-gradient-to-r from-indigo-700 to-indigo-500 text-white px-6 py-3 rounded-lg shadow-md transition-all"
+            >
+              <div className="bg-indigo-500/30 p-2 rounded-full mr-3">
+                <FaChartLine className="text-lg" />
+              </div>
+              <span className="font-medium">Mes notes</span>
             </Link>
           </motion.div>
         </div>
