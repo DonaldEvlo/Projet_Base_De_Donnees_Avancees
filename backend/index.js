@@ -469,11 +469,14 @@ app.get('/etudiant/:id/notes', async (req, res) => {
       // Find submission for this exercise if it exists
       const soumission = soumissions?.find(s => s.exercice_id === exercice.id);
       
+      // Important: Return note as null if not available (instead of a string)
       return {
         exercice_id: exercice.id,
         exercice: `Exercice ${exercice.id}`,
-        titre: exercice.titre || 'Non défini', // Using titre instead of commentaire, with default value
-        note: soumission?.notes?.note_finale || 'Pas encore de note'
+        titre: exercice.titre || 'Non défini',
+        note: soumission?.notes?.note_finale !== undefined ? 
+              Number(soumission.notes.note_finale) : 
+              null
       };
     });
     
