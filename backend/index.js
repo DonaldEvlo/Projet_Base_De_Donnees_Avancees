@@ -36,26 +36,6 @@ const fetchUser = async () => {
 };
 
 
-
-
-// ✅ Vérifie et crée les buckets si nécessaires
-const createBucketIfNotExists = async (bucketName) => {
-  const { data, error } = await supabase.storage.getBucket(bucketName);
-  if (!data) {
-    console.log(`Le bucket "${bucketName}" n'existe pas. Création...`);
-    const { error: createError } = await supabase.storage.createBucket(bucketName, { public: false });
-    if (createError) console.error(`Erreur création bucket "${bucketName}":`, createError.message);
-    else console.log(`✅ Bucket "${bucketName}" créé !`);
-  }
-};
-
-const initializeStorage = async () => {
-  await createBucketIfNotExists("exercices");
-  await createBucketIfNotExists("rapports");
-};
-
-initializeStorage();
-
 // Message de bienvenue
 app.get("/", (req, res) => {
   res.send("Bienvenue sur l'API Express pour le projet de BD!");
