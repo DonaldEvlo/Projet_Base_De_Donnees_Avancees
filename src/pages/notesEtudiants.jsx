@@ -1,13 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
+  FaArrowDown,
   FaArrowLeft,
   FaBook,
   FaChartBar,
   FaExclamationTriangle,
   FaMedal,
   FaUserGraduate,
-  FaArrowDown,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -468,7 +468,7 @@ const NotesEtudiant = () => {
                 </div>
                 <div>
                   <h4 className="text-2xl font-bold text-gray-800 dark:text-white">
-                    {stats.moyenne}/20
+                    {stats.min}/20
                   </h4>
                   <p className="text-gray-500 dark:text-gray-300">
                     Faible Note

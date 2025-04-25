@@ -1,14 +1,15 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
   FaArrowLeft,
   FaBook,
   FaChartBar,
   FaExclamationTriangle,
-  FaUserTie,
   FaMedal,
+  FaUserTie,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import supabase from "../../supabaseClient";
 
 const NotesParProf = () => {
   const [notes, setNotes] = useState([]);
@@ -72,14 +73,6 @@ const NotesParProf = () => {
     },
   };
 
-  const progressVariants = {
-    initial: { width: 0 },
-    animate: (value) => ({
-      width: `${value}%`,
-      transition: { duration: 0.8, ease: "easeOut", delay: 0.3 },
-    }),
-  };
-
   const floatingAnimation = {
     y: [0, -8, 0],
     transition: {
@@ -92,14 +85,26 @@ const NotesParProf = () => {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
+        // Récupérer la session Supabase
+        const { data: sessionData } = await supabase.auth.getSession();
+        
+        if (!sessionData?.session) {
+          throw new Error('Pas de session active');
+        }
+        
+        const token = sessionData.session.access_token;
+        
         const response = await fetch('http://localhost:5000/professeur/notes', {
-          credentials: 'include' // Pour les cookies de session
+          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         });
         
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération des notes');
         }
-
+  
         const data = await response.json();
         setNotes(data);
       } catch (err) {
@@ -113,6 +118,7 @@ const NotesParProf = () => {
     fetchNotes();
   }, []);
 
+  
   // Fonction pour afficher les notifications
   const showNotification = (message, type = "info") => {
     setNotification({ message, type });
@@ -123,7 +129,11 @@ const NotesParProf = () => {
   const calculateStats = () => {
     if (notes.length === 0) return { moyenne: 0, max: 0, min: 0, notesCount: 0 };
     
-    const validNotes = notes.map(item => item.note).filter(note => note !== null);
+    // Filtrer pour n'avoir que les notes numériques (non "Non notée")
+    const validNotes = notes
+      .filter(item => typeof item.note === 'number')
+      .map(item => item.note);
+    
     if (validNotes.length === 0) return { moyenne: 0, max: 0, min: 0, notesCount: 0 };
     
     const sum = validNotes.reduce((acc, note) => acc + note, 0);
@@ -148,6 +158,23 @@ const NotesParProf = () => {
   };
 
   const performance = determinePerformance(stats.moyenne);
+
+  // Fonction pour déterminer la classe CSS de la note
+  const getNoteClass = (note) => {
+    if (note === "Non notée") {
+      return 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    }
+    
+    const noteValue = parseFloat(note);
+    if (isNaN(noteValue)) return 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    
+    if (noteValue >= 16) return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+    if (noteValue >= 14) return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300';
+    if (noteValue >= 12) return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+    if (noteValue >= 10) return 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300';
+    if (noteValue >= 8) return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+    return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+  };
 
   if (loading) {
     return (
@@ -542,16 +569,8 @@ const NotesParProf = () => {
                         <td className="py-4 px-6">{item.exercice}</td>
                         <td className="py-4 px-6">{item.etudiant}</td>
                         <td className="py-4 px-6 text-center">
-                          <span className={`px-3 py-1 rounded-full font-medium ${
-                            !item.note ? 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300' :
-                            item.note >= 16 ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                            item.note >= 14 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300' :
-                            item.note >= 12 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
-                            item.note >= 10 ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300' :
-                            item.note >= 8 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                          }`}>
-                            {item.note !== null ? `${item.note}/20` : 'Non noté'}
+                          <span className={`px-3 py-1 rounded-full font-medium ${getNoteClass(item.note)}`}>
+                            {typeof item.note === 'number' ? `${item.note}/20` : 'Non notée'}
                           </span>
                         </td>
                       </motion.tr>

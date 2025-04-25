@@ -396,6 +396,45 @@ app.post("/:submissionId/noter", async (req, res) => {
 //Voir toutes les notes données par le prof
 app.get('/professeur/notes', async (req, res) => {
   try {
+    // Récupérer le token d'authentification de la requête
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Authentification requise" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    
+    // Utiliser le token pour obtenir l'utilisateur depuis Supabase
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !userData.user) {
+      console.error("Erreur d'authentification:", userError);
+      return res.status(401).json({ error: "Session invalide ou expirée" });
+    }
+    
+    const professeurId = userData.user.id;
+    
+    // D'abord, récupérer les exercices créés par ce professeur
+    const { data: exercicesProf, error: exercicesError } = await supabase
+      .from('exercices')
+      .select('id')
+      .eq('professeur_id', professeurId);
+      
+    if (exercicesError) {
+      console.error("Erreur récupération des exercices du professeur:", exercicesError);
+      return res.status(500).json({ error: exercicesError.message });
+    }
+    
+    // Obtenir un tableau des IDs d'exercices
+    const exerciceIds = exercicesProf.map(ex => ex.id);
+    
+    if (exerciceIds.length === 0) {
+      // Si le professeur n'a pas d'exercices, retourner un tableau vide
+      return res.json([]);
+    }
+    
+    // Maintenant récupérer les notes correspondant à ces exercices
     const { data, error } = await supabase
       .from('notes')
       .select(`
@@ -410,25 +449,25 @@ app.get('/professeur/notes', async (req, res) => {
             nom
           )
         )
-      `);
-
+      `)
+      .in('exercice_id', exerciceIds);
     if (error) {
       console.error("Erreur récupération des notes :", error);
       return res.status(500).json({ error: error.message });
     }
-
     const notes = data.map(n => ({
       exercice: `Exercice ${n.exercice_id}`,
       etudiant: n.soumissions?.etudiants?.nom || 'Étudiant inconnu',
       note: n.note_finale ?? 'Non notée'
     }));
-
     res.json(notes);
   } catch (err) {
     console.error("Erreur serveur :", err);
     res.status(500).json({ error: "Erreur interne du serveur" });
   }
 });
+
+
 
 //Récupérer les notes d'un étudiant
 app.get('/etudiant/:id/notes', async (req, res) => {
