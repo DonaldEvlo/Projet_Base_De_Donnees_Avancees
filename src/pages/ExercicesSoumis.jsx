@@ -165,16 +165,40 @@ const handleAIGrading = async (submission, exerciseId) => {
     setLoading(false);
   }
 };
-const handlePlagiatDetection = async (submissionId) => {
+// Modifier la fonction handlePlagiatDetection pour gérer plusieurs soumissions
+const handlePlagiatDetection = async () => {
   try {
     setPlagiatLoading(true);
     showNotification("Analyse du plagiat en cours...", "info");
     
-    const { data: sessionData } = await supabase.auth.getSession();
+    // Analyser toutes les soumissions de l'exercice sélectionné
+    const results = await Promise.all(submissions.map(async (submission) => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      
+      const response = await fetch(
+        `http://localhost:5000/soumissions/${submission.id}/detecter-plagiat`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Erreur pour la soumission ${submission.id}`);
+      }
+
+      return await response.json();
+    }));
+
+/*     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData?.session?.access_token;
     
+    // Appeler l'API avec l'ID de l'exercice au lieu de l'ID de la soumission
     const response = await fetch(
-      `http://localhost:5000/soumissions/${submissionId}/detecter-plagiat`,
+      `http://localhost:5000/soumissions/${selectedExercise.id}/detecter-plagiat`,
       {
         method: "POST",
         headers: {
@@ -187,24 +211,27 @@ const handlePlagiatDetection = async (submissionId) => {
       throw new Error("Erreur lors de l'analyse du plagiat");
     }
 
-    const result = await response.json();
+    const result = await response.json(); */
     
-    // Afficher le résultat
-    if (result.plagiat) {
+    // Compter le nombre de plagiats détectés
+    const plagiatsDetectes = results.filter(result => result.plagiat).length;
+    
+    // Afficher le résultat global
+    if (plagiatsDetectes > 0) {
       showNotification(
-        `Plagiat détecté ! Similarité: ${(result.similarite * 100).toFixed(1)}%`,
+        `${plagiatsDetectes} cas de plagiat détecté(s) !`,
         "error"
       );
     } else {
-      showNotification("Aucun plagiat détecté", "success");
+      showNotification("Aucun plagiat détecté dans les soumissions", "success");
     }
     
-    // Rafraîchir les soumissions
+    // Rafraîchir les soumissions pour mettre à jour l'affichage
     await fetchSubmissions(selectedExercise.id);
     
   } catch (err) {
     console.error("Erreur:", err);
-    showNotification(`Erreur: ${err.message}`, "error");
+    showNotification(`Erreur lors de l'analyse: ${err.message}`, "error");
   } finally {
     setPlagiatLoading(false);
   }
@@ -610,13 +637,58 @@ const handlePlagiatDetection = async (submissionId) => {
               variants={containerVariants}
               className="relative z-10 bg-white/20 dark:bg-gray-800/80 backdrop-blur-lg p-8 rounded-lg shadow-2xl max-w-4xl w-full mt-8"
             >
-              <motion.h3
-                variants={itemVariants}
-                className="text-2xl font-bold text-gray-100 dark:text-white mb-4"
-              >
-                Soumissions pour l'exercice{" "}
-                {selectedExercise.titre ?? selectedExercise.id}
-              </motion.h3>
+              <div className="flex justify-between items-center mb-6">
+                <motion.h3
+                  variants={itemVariants}
+                  className="text-2xl font-bold text-gray-100 dark:text-white"
+                >
+                  Soumissions pour l'exercice {" "}
+                  {selectedExercise.titre ?? selectedExercise.id}
+                </motion.h3>
+                
+                {/* Bouton global de détection de plagiat */}
+                {submissions.length > 0 && (
+                  <div className="flex gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handlePlagiatDetection}
+                    disabled={plagiatLoading}
+                    className={`px-6 py-3 rounded-lg font-bold transition flex items-center gap-2
+                      ${plagiatLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'} 
+                      text-white`}
+                  >
+                    {plagiatLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Analyse en cours...
+                      </>
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                          <path fillRule="evenodd" d="M12 3a9 9 0 100 18 9 9 0 000-18zM1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clipRule="evenodd" />
+                        </svg>
+                        Détecter les plagiats
+                      </>
+                    )}
+                  </motion.button>
+
+                  {/* Nouveau bouton pour accéder à la page de détails des plagiats */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate(`/exercice/${selectedExercise.id}/plagiat`)}
+                    className="px-6 py-3 rounded-lg font-bold transition flex items-center gap-2 
+                      bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Voir les détails des plagiats
+                  </motion.button>
+                  </div>
+                )}
+              </div>
 
               {loading ? (
                 <motion.div
@@ -659,14 +731,16 @@ const handlePlagiatDetection = async (submissionId) => {
                           </p>
                         )}
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedSubmission(submission)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
-                      >
-                        {submission.note ? "Modifier la note" : "Noter"}
-                      </motion.button>
+                      <div className="flex gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedSubmission(submission)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-600 transition"
+                        >
+                          {submission.note ? "Modifier la note" : "Noter"}
+                        </motion.button>
+                      </div>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -748,16 +822,16 @@ const handlePlagiatDetection = async (submissionId) => {
                   </motion.button>
 
                   <motion.button
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    onClick={() => handleAIGrading(selectedSubmission, selectedExercise.id)}
-    className="bg-purple-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-600 transition flex items-center gap-2"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.563-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd" />
-    </svg>
-    Notation IA
-  </motion.button>
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleAIGrading(selectedSubmission, selectedExercise.id)}
+                    className="bg-purple-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-600 transition flex items-center gap-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.563-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd" />
+                    </svg>
+                    Notation IA
+                  </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -767,10 +841,6 @@ const handlePlagiatDetection = async (submissionId) => {
                     Fermer
                   </motion.button>
                 </div>
-
-
-
-
               </motion.div>
             </motion.div>
           )}

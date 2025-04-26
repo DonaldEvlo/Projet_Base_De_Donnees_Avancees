@@ -470,170 +470,455 @@ app.get('/professeur/notes', async (req, res) => {
 
 
 //Récupérer les notes d'un étudiant
-app.get('/etudiant/:id/notes', async (req, res) => {
-  const { id } = req.params;
-
+app.post('/exercices/:id/detecter-plagiat', async (req, res) => {
+  const { id } = req.params; // ID de l'exercice
+  
   try {
-    // First, get all available exercises
-    const { data: exercices, error: exercicesError } = await supabase
-      .from('exercices')
-      .select('*')
-      .order('id');
-
-    if (exercicesError) {
-      console.error("Erreur récupération des exercices:", exercicesError);
-      return res.status(500).json({ error: exercicesError.message });
-    }
-
-    // Then, get the student's submissions and notes
-    const { data: soumissions, error: soumissionsError } = await supabase
+    // 1. Récupérer toutes les soumissions pour cet exercice
+    const { data: submissions, error: submissionsError } = await supabase
       .from('soumissions')
-      .select(`
-        id,
-        etudiant_id,
-        exercice_id,
-        notes (
-          note_finale
-        )
-      `)
-      .eq('etudiant_id', id);
-
-    if (soumissionsError) {
-      console.error("Erreur récupération des soumissions:", soumissionsError);
-      return res.status(500).json({ error: soumissionsError.message });
+      .select('id, etudiant_id, fichier_reponse')
+      .eq('exercice_id', id);
+    
+    if (submissionsError) {
+      console.error("Erreur lors de la récupération des soumissions:", submissionsError);
+      return res.status(500).json({ error: 'Erreur lors de la récupération des soumissions' });
     }
 
-    // Map exercises and merge with submission data
-    const notesEtExercices = exercices.map(exercice => {
-      // Find submission for this exercise if it exists
-      const soumission = soumissions?.find(s => s.exercice_id === exercice.id);
+    if (!submissions || submissions.length < 2) {
+      return res.status(200).json({ 
+        message: 'Pas assez de soumissions pour détecter les plagiats',
+        plagiatDetecte: false,
+        nombrePlagiats: 0
+      });
+    }
+
+    // 2. Supprimer toutes les anciennes entrées de plagiat pour cet exercice
+    const { error: deleteError } = await supabase
+      .from('plagiat')
+      .delete()
+      .eq('exercice_id', id);
       
-      // Important: Return note as null if not available (instead of a string)
+    if (deleteError) {
+      console.error("Erreur lors de la suppression des anciens résultats:", deleteError);
+    }
+
+    // 3. Calculer et stocker toutes les comparaisons
+    const SIMILARITY_THRESHOLD = 0.5;
+    
+    // Stocker toutes les comparaisons pour éviter les calculs redondants
+    // clé: "id1-id2" (avec id1 < id2 pour assurer la cohérence), valeur: similarité
+    const comparisonsMap = {};
+    
+    // Matrice des similarités pour chaque soumission
+    const similarityMatrix = {};
+    submissions.forEach(sub => {
+      similarityMatrix[sub.id] = {
+        id: sub.id,
+        etudiant_id: sub.etudiant_id,
+        similarSubmissions: []
+      };
+    });
+
+    // Calculer toutes les similarités possibles (une seule fois par paire)
+    for (let i = 0; i < submissions.length; i++) {
+      for (let j = i + 1; j < submissions.length; j++) {
+        // Identifiant unique pour cette comparaison
+        const sub1 = submissions[i];
+        const sub2 = submissions[j];
+        
+        // Calculer la similarité une seule fois par paire
+        const similarity = calculateSimilarity(
+          sub1.fichier_reponse,
+          sub2.fichier_reponse
+        );
+        
+        // Arrondir à 2 décimales pour éviter les problèmes de précision
+        const roundedSimilarity = parseFloat(similarity.toFixed(2));
+        
+        // Stocker le résultat de la comparaison
+        comparisonsMap[`${sub1.id}-${sub2.id}`] = roundedSimilarity;
+        
+        // Si la similarité dépasse le seuil, mettre à jour la matrice
+        if (roundedSimilarity >= SIMILARITY_THRESHOLD) {
+          // Ajouter à la liste des similarités pour sub1
+          similarityMatrix[sub1.id].similarSubmissions.push({
+            id: sub2.id,
+            etudiant_id: sub2.etudiant_id,
+            similarity: roundedSimilarity
+          });
+          
+          // Ajouter à la liste des similarités pour sub2
+          similarityMatrix[sub2.id].similarSubmissions.push({
+            id: sub1.id,
+            etudiant_id: sub1.etudiant_id,
+            similarity: roundedSimilarity
+          });
+        }
+      }
+    }
+
+    // 4. Identifier les cas de plagiat et enregistrer dans la base de données
+    const plagiatEntries = [];
+    const plagiatCases = [];
+    
+    // Pour chaque soumission ayant des similarités, créer une entrée dans la table plagiat
+    for (const subId in similarityMatrix) {
+      const submissionData = similarityMatrix[subId];
+      
+      if (submissionData.similarSubmissions.length > 0) {
+        // Calculer la similarité maximale pour cette soumission
+        const maxSimilarity = Math.max(
+          ...submissionData.similarSubmissions.map(s => s.similarity)
+        );
+        
+        // Créer l'entrée pour la table plagiat
+        plagiatEntries.push({
+          soumission_id: subId,
+          exercice_id: id,
+          similarite: maxSimilarity,
+          details: JSON.stringify({
+            message: "Possibilité de plagiat détectée",
+            similarSubmissions: submissionData.similarSubmissions
+          })
+        });
+        
+        // Ajouter aux cas de plagiat pour la réponse
+        plagiatCases.push({
+          soumission_id: subId,
+          etudiant_id: submissionData.etudiant_id,
+          similarite: maxSimilarity,
+          similarWith: submissionData.similarSubmissions
+        });
+      }
+    }
+    
+    // Insérer toutes les entrées de plagiat en une seule opération
+    if (plagiatEntries.length > 0) {
+      const { error: insertError } = await supabase
+        .from('plagiat')
+        .insert(plagiatEntries);
+        
+      if (insertError) {
+        console.error("Erreur lors de l'insertion des résultats de plagiat:", insertError);
+      }
+    }
+
+    // 5. Renvoyer le résultat global
+    const nombrePlagiats = plagiatCases.length;
+    
+    // Transformer l'objet similarityMatrix en tableau pour la réponse
+    const soumissionsAvecSimilarites = Object.values(similarityMatrix)
+      .filter(sub => sub.similarSubmissions.length > 0);
+    
+    // Liste de toutes les comparaisons pour le débogage
+    const allComparisons = Object.keys(comparisonsMap).map(key => {
+      const [id1, id2] = key.split('-');
       return {
-        exercice_id: exercice.id,
-        exercice: `Exercice ${exercice.id}`,
-        titre: exercice.titre || 'Non défini',
-        note: soumission?.notes?.note_finale !== undefined ? 
-              Number(soumission.notes.note_finale) : 
-              null
+        soumission1_id: id1,
+        soumission2_id: id2,
+        similarite: comparisonsMap[key]
       };
     });
     
-    res.json(notesEtExercices);
+    res.status(200).json({
+      message: nombrePlagiats > 0 
+        ? `${nombrePlagiats} soumissions avec plagiat détecté` 
+        : 'Aucun plagiat détecté',
+      plagiatDetecte: nombrePlagiats > 0,
+      nombrePlagiats,
+      soumissions: soumissionsAvecSimilarites,
+      comparaisons: allComparisons
+    });
+    
   } catch (err) {
-    console.error("Erreur serveur :", err);
-    res.status(500).json({ error: "Erreur interne du serveur" });
+    console.error("Erreur dans la détection de plagiat:", err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
 
+/**
+ * Calcule la similarité entre deux textes en utilisant la similarité cosinus
+ * basée sur la fréquence des mots.
+ *
+ * @param {string} file1 - Premier texte à comparer
+ * @param {string} file2 - Second texte à comparer
+ * @returns {number} - Score de similarité entre 0 et 1
+ */
+function calculateSimilarity(file1, file2) {
+  if (typeof file1 !== 'string' || typeof file2 !== 'string') {
+    return 0;
+  }
+  
+  // Si les fichiers sont identiques
+  if (file1 === file2) return 1.0;
+  
+  // Nettoyage et normalisation du texte
+  const normalize = (text) => {
+    return text
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const normalizedFile1 = normalize(file1);
+  const normalizedFile2 = normalize(file2);
+  
+  // Si après normalisation les textes sont identiques
+  if (normalizedFile1 === normalizedFile2) return 1.0;
+  
+  // Tokenizer le texte en mots pour une meilleure analyse
+  const tokenize = (text) => text.split(/\s+/).filter(token => token.length > 0);
+  
+  const tokens1 = tokenize(normalizedFile1);
+  const tokens2 = tokenize(normalizedFile2);
+  
+  // Si l'un des fichiers est vide après tokenization
+  if (tokens1.length === 0 || tokens2.length === 0) {
+    return 0.0;
+  }
+  
+  // Créer des vecteurs de fréquence pour chaque mot
+  const createFrequencyMap = (tokens) => {
+    const freqMap = {};
+    tokens.forEach(token => {
+      freqMap[token] = (freqMap[token] || 0) + 1;
+    });
+    return freqMap;
+  };
+  
+  const freqMap1 = createFrequencyMap(tokens1);
+  const freqMap2 = createFrequencyMap(tokens2);
+  
+  // Calculer la similarité cosinus correctement
+  // Formule: cos(θ) = (A·B) / (||A|| * ||B||)
+  
+  // Produit scalaire (A·B)
+  let dotProduct = 0;
+  for (const token in freqMap1) {
+    if (token in freqMap2) {
+      dotProduct += freqMap1[token] * freqMap2[token];
+    }
+  }
+  
+  // Calculer les magnitudes (||A|| et ||B||)
+  const magnitude1 = Math.sqrt(
+    Object.values(freqMap1).reduce((sum, freq) => sum + freq * freq, 0)
+  );
+  
+  const magnitude2 = Math.sqrt(
+    Object.values(freqMap2).reduce((sum, freq) => sum + freq * freq, 0)
+  );
+  
+  // Éviter la division par zéro
+  if (magnitude1 === 0 || magnitude2 === 0) {
+    return 0.0;
+  }
+  
+  // Calculer la similarité cosinus
+  const similarity = dotProduct / (magnitude1 * magnitude2);
+  
+  // S'assurer que la valeur est entre 0 et 1
+  return Math.max(0, Math.min(1, similarity));
+}
+
+// Assurez-vous que cette fonction est définie ailleurs dans votre code
+// ou remplacez-la par votre implémentation actuelle
+function calculateSimilarity(file1, file2) {
+  // Votre implémentation existante pour calculer la similarité
+  // Si les fichiers sont identiques, cela devrait retourner 1.0
+  
+  // Exemple d'implémentation simple (à remplacer par votre code réel)
+  if (typeof file1 === 'string' && typeof file2 === 'string') {
+    // Algorithme simple basé sur la différence de taille 
+    // et les caractères communs (exemple uniquement)
+    const len1 = file1.length;
+    const len2 = file2.length;
+    if (len1 === 0 && len2 === 0) return 1.0;
+    if (len1 === 0 || len2 === 0) return 0.0;
+    
+    // Si les fichiers sont exactement les mêmes
+    if (file1 === file2) return 1.0;
+    
+    // Utiliser un algorithme plus sophistiqué pour des résultats réels
+    // Ceci est un exemple simplifié de similarité cosinus
+    const set1 = new Set(file1.split(''));
+    const set2 = new Set(file2.split(''));
+    
+    const intersection = [...set1].filter(char => set2.has(char)).length;
+    const similarity = intersection / (Math.sqrt(set1.size) * Math.sqrt(set2.size));
+    
+    return similarity;
+  }
+  return 0; // Si les types ne sont pas compatibles
+}
+
 //Performances
-app.get('/performances', async (req, res) => {
+app.post('/exercices/:id/detecter-plagiat', async (req, res) => {
+  const { id } = req.params; // ID de l'exercice
+  
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Non authentifié' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData) {
-      return res.status(401).json({ error: 'Token invalide' });
-    }
-    if (userError) throw userError;
-
-    const userId = userData.user.id;
-
-    // Fetch all submissions and notes for the student
+    // 1. Récupérer toutes les soumissions pour cet exercice
     const { data: submissions, error: submissionsError } = await supabase
       .from('soumissions')
-      .select(`
-        id,
-        exercice_id,
-        date_soumission,
-        exercices (
-          pdf_url,
-          commentaire
-        ),
-        notes (
-          note_finale
-        )
-      `)
-      .eq('etudiant_id', userId)
-      .order('date_soumission', { ascending: false });
+      .select('id, etudiant_id, fichier_reponse')
+      .eq('exercice_id', id);
+    
+    if (submissionsError) {
+      console.error("Erreur lors de la récupération des soumissions:", submissionsError);
+      return res.status(500).json({ error: 'Erreur lors de la récupération des soumissions' });
+    }
 
-    if (submissionsError) throw submissionsError;
+    if (!submissions || submissions.length < 2) {
+      return res.status(200).json({ 
+        message: 'Pas assez de soumissions pour détecter les plagiats',
+        plagiatDetecte: false,
+        nombrePlagiats: 0
+      });
+    }
 
-    const { data: exercices, error: exercicesError } = await supabase
-      .from('exercices')
-      .select(`*
-      `);
+    // 2. Nettoyer les anciennes détections de plagiat pour cet exercice
+    // D'abord récupérer tous les IDs de soumissions pour cet exercice
+    const submissionIds = submissions.map(s => s.id);
+    
+    // Supprimer les anciennes entrées de plagiat pour ces soumissions
+    const { error: deleteError } = await supabase
+      .from('plagiat')
+      .delete()
+      .in('soumission_id', submissionIds);
+      
+    if (deleteError) {
+      console.error("Erreur lors de la suppression des anciens résultats:", deleteError);
+    }
 
-    if (exercicesError) throw exercicesError;
-
-    // Calculate performance metrics
-    const totalExercises = exercices.length;
-    const completedExercises = submissions.filter(s => s.notes).length;
-    const scores = submissions
-      .filter(s => s.notes)
-      .map(s => s.notes.note_finale);
-
-    const averageScore = scores.length > 0 
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) 
-      : 0;
-    const bestScore = scores.length > 0 
-      ? Math.round(Math.max(...scores)) 
-      : 0;
-
-    // Get recent submissions
-    const recentSubmissions = submissions
-      .slice(0, 3)
-      .map(sub => ({
-        id: sub.id,
-        exerciceId: sub.exercice_id,
-        titre: sub.exercices.commentaire || `Exercice ${sub.exercice_id}`,
-        score: sub.notes ? Math.round(sub.notes.note_finale) : 0,
-        date: sub.date_soumission
-      }));
-
-    // Calculate monthly progress
-    const monthlyScores = new Map();
+    // 3. Comparer chaque soumission avec toutes les autres
+    const SIMILARITY_THRESHOLD = 0.5;
+    
+    // Structure pour stocker toutes les comparaisons
+    let allComparisons = [];
+    // Structure pour stocker les cas de plagiat détectés
+    let plagiatCases = [];
+    // Structure pour stocker les similarités par soumission
+    let similaritiesBySubmission = {};
+    
+    // Initialiser la structure de similarités pour chaque soumission
     submissions.forEach(sub => {
-      if (sub.notes) {
-        const month = new Date(sub.date_soumission).toLocaleString('fr', { month: 'short' });
-        if (!monthlyScores.has(month)) {
-          monthlyScores.set(month, []);
+      similaritiesBySubmission[sub.id] = {
+        id: sub.id,
+        etudiant_id: sub.etudiant_id,
+        similarites: []
+      };
+    });
+
+    // Réaliser toutes les comparaisons possibles
+    for (let i = 0; i < submissions.length; i++) {
+      for (let j = i + 1; j < submissions.length; j++) {
+        const similarity = calculateSimilarity(
+          submissions[i].fichier_reponse,
+          submissions[j].fichier_reponse
+        );
+        
+        // Stocker toutes les comparaisons pour la traçabilité
+        allComparisons.push({
+          soumission1_id: submissions[i].id,
+          soumission2_id: submissions[j].id,
+          similarite: parseFloat(similarity.toFixed(2))
+        });
+        
+        // Si la similarité dépasse le seuil, c'est un plagiat potentiel
+        if (similarity >= SIMILARITY_THRESHOLD) {
+          const plagiatCase = {
+            soumission1: {
+              id: submissions[i].id,
+              etudiant_id: submissions[i].etudiant_id
+            },
+            soumission2: {
+              id: submissions[j].id,
+              etudiant_id: submissions[j].etudiant_id
+            },
+            similarite: parseFloat(similarity.toFixed(2))
+          };
+          
+          plagiatCases.push(plagiatCase);
+          
+          // Ajouter à la liste de similarités pour la soumission i
+          similaritiesBySubmission[submissions[i].id].similarites.push({
+            soumission_id: submissions[j].id,
+            etudiant_id: submissions[j].etudiant_id,
+            similarite: parseFloat(similarity.toFixed(2))
+          });
+
+          // Ajouter à la liste de similarités pour la soumission j
+          similaritiesBySubmission[submissions[j].id].similarites.push({
+            soumission_id: submissions[i].id,
+            etudiant_id: submissions[i].etudiant_id,
+            similarite: parseFloat(similarity.toFixed(2))
+          });
+          
+          // Préparer les entrées pour la base de données
+          const plagiatEntries = [
+            {
+              soumission_id: submissions[i].id,
+              exercice_id: id,
+              similarite: similarity,
+              details: JSON.stringify({
+                similaire_avec: [
+                  { 
+                    soumission_id: submissions[j].id,
+                    etudiant_id: submissions[j].etudiant_id,
+                    similarite: parseFloat(similarity.toFixed(2))
+                  }
+                ]
+              })
+            },
+            {
+              soumission_id: submissions[j].id,
+              exercice_id: id,
+              similarite: similarity,
+              details: JSON.stringify({
+                similaire_avec: [
+                  {
+                    soumission_id: submissions[i].id,
+                    etudiant_id: submissions[i].etudiant_id,
+                    similarite: parseFloat(similarity.toFixed(2))
+                  }
+                ]
+              })
+            }
+          ];
+          
+          // Enregistrer les résultats dans la base de données
+          const { error: insertError } = await supabase
+            .from('plagiat')
+            .insert(plagiatEntries);
+            
+          if (insertError) {
+            console.error("Erreur lors de l'insertion des résultats de plagiat:", insertError);
+          }
         }
-        monthlyScores.get(month).push(sub.notes.note_finale);
       }
+    }
+    
+    // Transformer la structure en tableau pour l'API
+    const soumissionsAvecSimilarites = Object.values(similaritiesBySubmission);
+
+    // 4. Renvoyer le résultat global
+    const nombrePlagiats = plagiatCases.length;
+    
+    res.status(200).json({
+      message: nombrePlagiats > 0 
+        ? `${nombrePlagiats} cas de plagiat détectés` 
+        : 'Aucun plagiat détecté',
+      plagiatDetecte: nombrePlagiats > 0,
+      nombrePlagiats,
+      details: plagiatCases,
+      soumissions: soumissionsAvecSimilarites,
+      comparaisons: allComparisons
     });
-
-    const monthlyProgress = Array.from(monthlyScores.entries())
-      .map(([month, scores]) => ({
-        month,
-        score: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      }))
-      .slice(-4);
-
-    res.json({
-      completionRate: Math.round((completedExercises / totalExercises) * 100) || 0,
-      averageScore,
-      bestScore,
-      exercisesCompleted: completedExercises,
-      totalExercises,
-      recentSubmissions,
-      monthlyProgress,
-      skillsRadar: [
-        { skill: "SQL Basique", value: averageScore },
-        { skill: "Jointures", value: averageScore },
-        { skill: "Agrégation", value: averageScore },
-        { skill: "Optimisation", value: averageScore },
-        { skill: "Normalisation", value: averageScore }
-      ]
-    });
-
-  } catch (error) {
-    console.error('Error fetching performance data:', error);
-    res.status(500).json({ error: error.message });
+    
+  } catch (err) {
+    console.error("Erreur dans la détection de plagiat:", err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
 
@@ -949,29 +1234,83 @@ app.post('/soumissions/:id/detecter-plagiat', async (req, res) => {
 
 // Route pour récupérer les informations de plagiat d'une soumission
 app.get('/soumissions/:id/plagiat', async (req, res) => {
-  const { id } = req.params;
-  
   try {
-    const { data, error } = await supabase
+    const exerciceId = req.params.id;
+    
+    // Récupérer toutes les soumissions pour cet exercice
+    const { data: soumissions, error: soumissionsError } = await supabase
+      .from('soumissions')
+      .select('id, etudiant_id')
+      .eq('exercice_id', exerciceId);
+    
+    if (soumissionsError) {
+      throw soumissionsError;
+    }
+
+    if (!soumissions || soumissions.length === 0) {
+      return res.status(404).json({ message: 'Aucune soumission trouvée pour cet exercice' });
+    }
+
+    // Extraire les IDs de soumission
+    const soumissionIds = soumissions.map(s => s.id);
+    
+    // Récupérer les informations de plagiat pour ces soumissions
+    const { data: plagiatInfos, error: plagiatError } = await supabase
       .from('plagiat')
       .select('*')
-      .eq('soumission_id', id)
-      .single();
+      .in('soumission_id', soumissionIds);
     
-    if (error) {
-      // Si l'erreur est due à l'absence d'entrée, retourner "pas d'analyse"
-      if (error.code === 'PGRST116') {
-        return res.status(404).json({ message: 'Aucune analyse de plagiat n\'a été effectuée pour cette soumission' });
-      }
-      return res.status(500).json({ error: error.message });
+    if (plagiatError) {
+      throw plagiatError;
     }
+
+    // Récupérer les informations des étudiants associés aux soumissions
+    const { data: etudiants, error: etudiantsError } = await supabase
+      .from('etudiants')
+      .select('id, nom');
     
-    res.json(data);
-  } catch (err) {
-    console.error("Erreur lors de la récupération des infos de plagiat:", err);
-    res.status(500).json({ error: 'Erreur interne du serveur' });
+    if (etudiantsError) {
+      throw etudiantsError;
+    }
+
+    // Associer les informations des étudiants aux soumissions et au plagiat
+    const rapportComplet = plagiatInfos.map(plagiat => {
+      // Trouver la soumission correspondante
+      const soumission = soumissions.find(s => s.id === plagiat.soumission_id);
+      
+      // Trouver l'étudiant correspondant à cette soumission
+      const etudiant = etudiants.find(e => e.id === soumission?.etudiant_id);
+
+      // Trouver les étudiants correspondant aux soumissions similaires
+      const similaritesDetails = plagiat.details.similarSubmissions.map(similarSub => {
+        const similarSoumission = soumissions.find(s => s.id === similarSub.id);
+        const similarEtudiant = etudiants.find(e => e.id === similarSoumission?.etudiant_id);
+        
+        return {
+          ...similarSub,
+          soumission_id: similarSub.id,
+          etudiant_nom: similarEtudiant?.nom || 'Inconnu'
+        };
+      });
+
+      return {
+        id: plagiat.id,
+        soumission_id: plagiat.soumission_id,
+        etudiant_id: soumission?.etudiant_id,
+        etudiant_nom: etudiant?.nom || 'Inconnu',
+        similarite: plagiat.similarite,
+        message: plagiat.details.message,
+        similarites: similaritesDetails
+      };
+    });
+
+    res.status(200).json(rapportComplet);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des rapports de plagiat:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération des rapports de plagiat' });
   }
 });
+
 
 app.listen(port, () => {
     console.log(`Serveur démarré sur http://localhost:${port}`); 

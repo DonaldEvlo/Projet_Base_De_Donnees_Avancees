@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import ChooseRole from "../../src/pages/choisirRole";
+import CorrectionIA from "../../src/pages/CorrectionIA";
 import CreerExercice from "../../src/pages/CreerExercice";
 import DashboardEtudiant from "../../src/pages/DashboardEtudiant";
 import DashboardProf from "../../src/pages/DashboardProf";
@@ -12,12 +13,12 @@ import ModifierExercice from "../../src/pages/ModifierExercice";
 import NotesEtudiant from "../../src/pages/notesEtudiants";
 import NotesParProf from "../../src/pages/notesProf";
 import NotFound from "../../src/pages/notFound";
+import PerformanceDashboard from "../../src/pages/PerformanceDashboard";
+import RapportPlagiat from "../../src/pages/RapportPlagiat";
 import LoginEtudiant from "../../src/pages/signin etudiant";
 import LoginProf from "../../src/pages/signin prof";
 import Register from "../../src/pages/signup";
 import StudentPerformance from "../../src/pages/StudentPerformance";
-import PerformanceDashboard from "../../src/pages/PerformanceDashboard"; 
-import CorrectionIA from "../../src/pages/CorrectionIA";
 
 const AppRoutes = () => {
   return (
@@ -31,6 +32,7 @@ const AppRoutes = () => {
       <Route path="/create-exercise" element={<CreerExercice />} />
       <Route path="/exercices" element={<ListeExercices />} />
       <Route path="/edit-exercise/:id" element={<ModifierExercice />} />
+      <Route path="/exercice/:id/plagiat" element={<RapportPlagiat />} />
       <Route path="/exercices-soumis" element={<ExercicesSoumis />} />
       <Route path="/dashboard-etudiant" element={<DashboardEtudiant />} />
       <Route path="/mes-notes" element={<NotesEtudiant />} />
