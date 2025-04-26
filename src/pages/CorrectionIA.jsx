@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
 function CorrectionIA() {
     const [file, setFile] = useState(null);
@@ -90,32 +90,34 @@ function CorrectionIA() {
                 </form>
 
                 <AnimatePresence>
-                    {message && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className={`mt-6 p-3 rounded-md text-center font-medium ${
-                                message.includes("succès") || message.includes("réussie")
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
-                                    : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
-                            }`}
-                        >
-                            {message}
-                        </motion.div>
-                    )}
+    {message && (
+        <motion.div
+            key="message"  // Add this unique key
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className={`mt-6 p-3 rounded-md text-center font-medium ${
+                message.includes("succès") || message.includes("réussie")
+                    ? "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300"
+                    : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+            }`}
+        >
+            {message}
+        </motion.div>
+    )}
 
-                    {result !== null && (
-                        <motion.p
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className="mt-6 text-center text-xl font-semibold text-gray-800 dark:text-white"
-                        >
-                            ✨ Note attribuée par l'IA : <span className="text-blue-600 dark:text-blue-400">{result} / 20</span>
-                        </motion.p>
-                    )}
-                </AnimatePresence>
+    {result !== null && (
+        <motion.p
+            key="result"  // Add this unique key
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mt-6 text-center text-xl font-semibold text-gray-800 dark:text-white"
+        >
+            ✨ Note attribuée par l'IA : <span className="text-blue-600 dark:text-blue-400">{result} / 20</span>
+        </motion.p>
+    )}
+</AnimatePresence>
             </motion.div>
         </div>
     );

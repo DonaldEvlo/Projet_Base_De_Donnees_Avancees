@@ -839,6 +839,147 @@ app.get('/performance-etudiants', async (req, res) => {
   }
 });
 
+app.post('/soumissions/:id/detecter-plagiat', async (req, res) => {
+  const { id } = req.params; // ID de la soumission à vérifier
+  
+  try {
+    // 1. Récupérer la soumission à vérifier
+    const { data: currentSubmission, error: submissionError } = await supabase
+      .from('soumissions')
+      .select('id, etudiant_id, exercice_id, fichier_reponse')
+      .eq('id', id)
+      .single();
+    
+    if (submissionError || !currentSubmission) {
+      console.error("Erreur lors de la récupération de la soumission:", submissionError);
+      return res.status(404).json({ error: 'Soumission non trouvée' });
+    }
+    
+    // 2. Récupérer toutes les autres soumissions pour le même exercice
+    // On exclut la soumission courante et celles du même étudiant
+    const { data: otherSubmissions, error: othersError } = await supabase
+      .from('soumissions')
+      .select('id, etudiant_id, fichier_reponse')
+      .eq('exercice_id', currentSubmission.exercice_id)
+      .neq('id', id)
+      .neq('etudiant_id', currentSubmission.etudiant_id);
+    
+    if (othersError) {
+      console.error("Erreur lors de la récupération des autres soumissions:", othersError);
+      return res.status(500).json({ error: 'Erreur lors de la recherche des soumissions à comparer' });
+    }
+    
+    // 3. Si aucune autre soumission à comparer, on enregistre "aucun plagiat"
+    if (otherSubmissions.length === 0) {
+      const plagiatData = {
+        soumission_id: id,
+        similarite: 0,
+        details: JSON.stringify({ message: 'Aucun plagiat détecté (aucune autre soumission à comparer)' })
+      };
+      
+      const { error: insertError } = await supabase
+        .from('plagiat')
+        .upsert(plagiatData, { onConflict: 'soumission_id' });
+      
+      if (insertError) {
+        console.error("Erreur lors de l'enregistrement du résultat:", insertError);
+        return res.status(500).json({ error: 'Erreur lors de l\'enregistrement du résultat' });
+      }
+      
+      return res.status(200).json({ message: 'Analyse terminée', plagiat: false });
+    }
+    
+    // 4. Comparer avec chaque soumission et trouver celles qui dépassent le seuil de similarité
+    const SIMILARITY_THRESHOLD = 0.5; // Seuil à partir duquel on considère qu'il y a plagiat (50%)
+    const similarSubmissions = [];
+    
+    // Dans un cas réel, vous devriez analyser le contenu des fichiers
+    // Ici, on simule la comparaison avec la fonction calculateSimilarity
+    for (const submission of otherSubmissions) {
+      // Simulons une comparaison de contenu (dans un cas réel, vous téléchargeriez et analyseriez les fichiers)
+      const similarity = calculateSimilarity(currentSubmission.fichier_reponse, submission.fichier_reponse);
+      
+      if (similarity >= SIMILARITY_THRESHOLD) {
+        similarSubmissions.push({
+          id: submission.id,
+          similarity: parseFloat(similarity.toFixed(2))
+        });
+      }
+    }
+    
+    // 5. Enregistrer les résultats dans la table plagiat
+    const plagiatDetails = {
+      similarSubmissions: similarSubmissions,
+      message: similarSubmissions.length > 0 
+        ? 'Possibilité de plagiat détectée' 
+        : 'Aucun plagiat détecté'
+    };
+    
+    const plagiatData = {
+      soumission_id: id,
+      similarite: similarSubmissions.length > 0 
+        ? Math.max(...similarSubmissions.map(s => s.similarity)) 
+        : 0,
+      details: plagiatDetails
+    };
+    
+    // Utiliser upsert pour mettre à jour si une entrée existe déjà
+    const { error: insertError } = await supabase
+      .from('plagiat')
+      .upsert(plagiatData, { onConflict: 'soumission_id' });
+    
+    if (insertError) {
+      console.error("Erreur lors de l'enregistrement du résultat:", insertError);
+      return res.status(500).json({ error: 'Erreur lors de l\'enregistrement du résultat' });
+    }
+    
+    // 6. Renvoyer le résultat
+    res.status(200).json({
+      message: 'Analyse de plagiat terminée',
+      plagiat: similarSubmissions.length > 0,
+      similarite: plagiatData.similarite,
+      details: plagiatDetails
+    });
+    
+  } catch (err) {
+    console.error("Erreur dans la détection de plagiat:", err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// Route pour récupérer les informations de plagiat d'une soumission
+app.get('/soumissions/:id/plagiat', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const { data, error } = await supabase
+      .from('plagiat')
+      .select('*')
+      .eq('soumission_id', id)
+      .single();
+    
+    if (error) {
+      // Si l'erreur est due à l'absence d'entrée, retourner "pas d'analyse"
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({ message: 'Aucune analyse de plagiat n\'a été effectuée pour cette soumission' });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+    
+    res.json(data);
+  } catch (err) {
+    console.error("Erreur lors de la récupération des infos de plagiat:", err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
 app.listen(port, () => {
     console.log(`Serveur démarré sur http://localhost:${port}`); 
 });
+
+function calculateSimilarity(text1, text2) {
+  // Simulons une analyse basique (à remplacer par un vrai algorithme)
+  // Cette fonction simple génère un pourcentage aléatoire entre 0 et 80%
+  // Dans une application réelle, il faudrait implémenter un véritable algorithme de comparaison
+  return Math.random() * 0.8; // Entre 0 et 0.8 (0 à 80%)
+}

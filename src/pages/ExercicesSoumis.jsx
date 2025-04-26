@@ -12,6 +12,8 @@ import { getEtudiantById } from "../../backend/services/authServices";
 import supabase from "../../supabaseClient";
 
 const ExercicesSoumis = () => {
+  const [aiLoading, setAiLoading] = useState(false);
+  const [plagiatLoading, setPlagiatLoading] = useState(false);
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [submissions, setSubmissions] = useState([]);
@@ -26,6 +28,7 @@ const ExercicesSoumis = () => {
     return savedMode === "true";
   });
 
+  
   const toggleDarkMode = () => {
     const newMode = !darkMode;
     setDarkMode(newMode);
@@ -77,6 +80,135 @@ const ExercicesSoumis = () => {
     },
   };
 
+  // Fonction pour utiliser l'IA pour noter l'exercice
+const handleAIGrading = async (submission, exerciseId) => {
+  try {
+    setAiLoading(true);
+    setLoading(true);
+    showNotification("Notation IA en cours...", "info");
+    
+    // Extraire l'URL du fichier PDF
+    const pdfUrl = submission.fichier_reponse;
+    
+    if (!pdfUrl) {
+      throw new Error("Le fichier de soumission est introuvable");
+    }
+    
+    // Récupérer le fichier PDF
+    const pdfResponse = await fetch(pdfUrl);
+    const pdfBlob = await pdfResponse.blob();
+    
+    // Créer un FormData avec le PDF
+    const formData = new FormData();
+    formData.append('pdf', pdfBlob, 'submission.pdf');
+    
+    // Appeler le service de correction IA
+    const aiResponse = await fetch('http://localhost:5001/api/correct', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!aiResponse.ok) {
+      throw new Error("Erreur lors de la communication avec le service IA");
+    }
+    
+    const result = await aiResponse.json();
+    
+    if (result.success) {
+      // Mettre à jour l'input avec la note générée par l'IA
+      setGrade(result.note.toString());
+      showNotification(`Note IA générée: ${result.note}/20`, "success");
+      
+      // Soumettre directement la note à la base de données
+      // sans passer par handleGradeSubmit
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+
+        const response = await fetch(
+          `http://localhost:5000/${submission.id}/noter`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              grade: result.note.toString(),
+              exerciseId,
+              source: 'ai' // Optionnel - si le backend accepte ce paramètre
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de l'enregistrement de la note générée par l'IA");
+        }
+        
+        showNotification("Note IA enregistrée avec succès !", "success");
+        setSelectedSubmission(null);
+        
+        // Rafraîchir les soumissions
+        await fetchSubmissions(exerciseId);
+      } catch (submitError) {
+        throw new Error(`Erreur lors de l'enregistrement de la note: ${submitError.message}`);
+      }
+    } else {
+      throw new Error(result.error || "Échec de la notation automatique");
+    }
+    
+  } catch (err) {
+    console.error("Erreur notation IA:", err);
+    showNotification(`Erreur: ${err.message}`, "error");
+  } finally {
+    setAiLoading(false);
+    setLoading(false);
+  }
+};
+const handlePlagiatDetection = async (submissionId) => {
+  try {
+    setPlagiatLoading(true);
+    showNotification("Analyse du plagiat en cours...", "info");
+    
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
+    
+    const response = await fetch(
+      `http://localhost:5000/soumissions/${submissionId}/detecter-plagiat`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Erreur lors de l'analyse du plagiat");
+    }
+
+    const result = await response.json();
+    
+    // Afficher le résultat
+    if (result.plagiat) {
+      showNotification(
+        `Plagiat détecté ! Similarité: ${(result.similarite * 100).toFixed(1)}%`,
+        "error"
+      );
+    } else {
+      showNotification("Aucun plagiat détecté", "success");
+    }
+    
+    // Rafraîchir les soumissions
+    await fetchSubmissions(selectedExercise.id);
+    
+  } catch (err) {
+    console.error("Erreur:", err);
+    showNotification(`Erreur: ${err.message}`, "error");
+  } finally {
+    setPlagiatLoading(false);
+  }
+};
   // Récupérer les exercices depuis l'API
   useEffect(() => {
     const fetchUserAndExercises = async () => {
@@ -614,6 +746,18 @@ const ExercicesSoumis = () => {
                   >
                     <FaCheckCircle /> Soumettre la note
                   </motion.button>
+
+                  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => handleAIGrading(selectedSubmission, selectedExercise.id)}
+    className="bg-purple-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-purple-600 transition flex items-center gap-2"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.563-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd" />
+    </svg>
+    Notation IA
+  </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -623,6 +767,10 @@ const ExercicesSoumis = () => {
                     Fermer
                   </motion.button>
                 </div>
+
+
+
+
               </motion.div>
             </motion.div>
           )}
@@ -640,7 +788,16 @@ const ExercicesSoumis = () => {
           © 2025 Plateforme SGBD. Tous droits réservés.
         </p>
       </motion.footer>
+      {aiLoading && (
+  <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 rounded-lg z-10">
+    <div className="text-white text-center">
+      <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+      <p>Analyse du PDF par l'IA...</p>
     </div>
+  </div>
+)}
+    </div>
+    
   );
 };
 
