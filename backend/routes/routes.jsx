@@ -19,6 +19,9 @@ import LoginEtudiant from "../../src/pages/signin etudiant";
 import LoginProf from "../../src/pages/signin prof";
 import Register from "../../src/pages/signup";
 import StudentPerformance from "../../src/pages/StudentPerformance";
+import ForgotPassword from "../../src/pages/ForgotPassword";
+import ResetPassword from "../../src/pages/ResetPassword";
+
 
 const AppRoutes = () => {
   return (
@@ -41,6 +44,8 @@ const AppRoutes = () => {
       <Route path="/student-performance" element={<StudentPerformance />} /> 
       <Route path="/correction-ia" element={<CorrectionIA />} />
       <Route path="/mes-performances" element={<PerformanceDashboard />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

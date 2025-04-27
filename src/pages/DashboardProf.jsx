@@ -11,7 +11,8 @@ import {
   FaChartBar,
   FaChartLine,
   FaLaptopCode,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaBookOpen,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "../../backend/services/authServices"; // Assurez-vous que le chemin est correct
@@ -674,9 +675,9 @@ const DashboardProf = () => {
 
                       <DashboardCard
                         icon={
-                          <FaChartLine className="text-5xl text-purple-500 mb-2" />
+                          <FaChartLine className="text-5xl text-orange-500 mb-2" />
                         }
-                        label="Performance"
+                        label="Performances"
                         description="Consultez vos statistiques"
                         onClick={() => handleNavigation("/student-performance")}
                         variants={cardVariants}
@@ -687,7 +688,7 @@ const DashboardProf = () => {
 
                       <DashboardCard
                         icon={
-                          <FaChartLine className="text-5xl text-purple-500 mb-2" />
+                          <FaBookOpen className="text-5xl text-blue-500 mb-2" />
                         }
                         label="Notes Attribuées"
                         description="Consultez les notes attribuées aux étudiants"

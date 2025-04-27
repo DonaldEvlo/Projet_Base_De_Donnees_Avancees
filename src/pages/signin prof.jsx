@@ -5,6 +5,7 @@ import {
   listenToAuthChanges,
   signInWithEmail,
   signInWithOAuthProf,
+
 } from "../../backend/services/authServices";
 import "../styles/signin.css";
 // Import de Framer Motion pour les animations
@@ -285,8 +286,8 @@ const LoginProf = () => {
     }
   };
 
-  // Animation pour le lien d'inscription
-  const registerLinkVariants = {
+  // Animation pour le lien d'inscription et de mot de passe oublié
+  const linkVariants = {
     initial: { 
       opacity: 0 
     },
@@ -296,6 +297,11 @@ const LoginProf = () => {
         delay: 1.4,
         duration: 0.5
       }
+    },
+    hover: {
+      scale: 1.05,
+      color: "#007bff",
+      transition: { duration: 0.2 }
     }
   };
 
@@ -325,6 +331,24 @@ const LoginProf = () => {
     }
   };
 
+  // Animation pour le lien de mot de passe oublié
+  const forgotPasswordVariants = {
+    initial: { 
+      opacity: 0,
+      y: 10
+    },
+    animate: { 
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15,
+        delay: 0.7
+      }
+    }
+  };
+
   return (
     <motion.div 
       className="login-container"
@@ -346,31 +370,31 @@ const LoginProf = () => {
         </motion.div>
         
         <motion.button
-                 whileHover={{ scale: 1.05 }}
-                 whileTap={{ scale: 0.95 }}
-                 onClick={() => navigate("/login")}
-                 className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
-                 type="button"
-               >
-                 <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
-                   <svg
-                     xmlns="http://www.w3.org/2000/svg"
-                     viewBox="0 0 1024 1024"
-                     height="25px"
-                     width="25px"
-                   >
-                     <path
-                       d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
-                       fill="#000000"
-                     ></path>
-                     <path
-                       d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
-                       fill="#000000"
-                     ></path>
-                   </svg>
-                 </div>
-                 <p className="translate-x-2">Go Back</p>
-               </motion.button>
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate("/login")}
+          className="bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+          type="button"
+        >
+          <div className="bg-green-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-1 top-[4px] group-hover:w-[184px] z-10 duration-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 1024 1024"
+              height="25px"
+              width="25px"
+            >
+              <path
+                d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                fill="#000000"
+              ></path>
+              <path
+                d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                fill="#000000"
+              ></path>
+            </svg>
+          </div>
+          <p className="translate-x-2">Go Back</p>
+        </motion.button>
       </motion.nav>
 
       <main className="login-main">
@@ -462,6 +486,21 @@ const LoginProf = () => {
             >
               {isLoading ? "Connexion en cours..." : "Se connecter"}
             </motion.button>
+            {/* Ajout du lien "Mot de passe oublié" */}
+            <motion.div 
+              className="forgot-password-container"
+              variants={forgotPasswordVariants}
+              style={{ textAlign: 'right', marginBottom: '15px' }}
+            >
+              <motion.span
+                variants={linkVariants}
+                whileHover="hover"
+              >
+                <Link to="/forgot-password" className="forgot-password-link" style={{ color: '#007bff', textDecoration: 'none', fontSize: '0.9rem' }}>
+                  Mot de passe oublié ?
+                </Link>
+              </motion.span>
+            </motion.div>
           </motion.form>
 
           <motion.div 
@@ -509,7 +548,7 @@ const LoginProf = () => {
 
           <motion.p 
             className="register-link"
-            variants={registerLinkVariants}
+            variants={linkVariants}
           >
             Pas encore inscrit ?{" "}
             <motion.span

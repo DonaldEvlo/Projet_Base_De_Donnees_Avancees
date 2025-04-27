@@ -359,3 +359,57 @@ export const getEtudiantById = async (userId, tableName) => {
   }
 };
 
+/**
+ * Demande de réinitialisation du mot de passe
+ */
+export const resetPassword = async (email) => {
+  try {
+    if (!email) {
+      throw new Error("Email requis !");
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Email invalide !");
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return { success: true, message: "Instructions envoyées à votre email." };
+  } catch (error) {
+    throw new Error(error.message || "Erreur lors de la demande de réinitialisation.");
+  }
+};
+
+/**
+ * Mise à jour du mot de passe après réinitialisation
+ */
+export const updatePassword = async (newPassword) => {
+  try {
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error("Le nouveau mot de passe doit contenir au moins 6 caractères.");
+    }
+
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return { success: true, message: "Mot de passe mis à jour avec succès." };
+  } catch (error) {
+    throw new Error(error.message || "Erreur lors de la mise à jour du mot de passe.");
+  }
+};
+
+
+
+

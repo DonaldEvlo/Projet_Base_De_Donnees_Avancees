@@ -594,11 +594,11 @@ const NotesParProf = () => {
             <motion.button
               whileHover={{ scale: 1.03, y: -3 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => showNotification('Fonctionnalité à venir!', 'info')}
+              onClick={() => navigate("/student-performance")}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 mx-auto"
             >
               <FaChartBar />
-              <span>Exporter les données</span>
+              <span>Performances des Etudiants</span>
             </motion.button>
           </motion.div>
         </motion.div>
