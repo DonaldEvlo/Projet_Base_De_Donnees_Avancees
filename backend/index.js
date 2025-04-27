@@ -470,6 +470,64 @@ app.get('/professeur/notes', async (req, res) => {
 
 
 //Récupérer les notes d'un étudiant
+app.get('/etudiant/:id/notes', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // First, get all available exercises
+    const { data: exercices, error: exercicesError } = await supabase
+      .from('exercices')
+      .select('*')
+      .order('id');
+
+    if (exercicesError) {
+      console.error("Erreur récupération des exercices:", exercicesError);
+      return res.status(500).json({ error: exercicesError.message });
+    }
+
+    // Then, get the student's submissions and notes
+    const { data: soumissions, error: soumissionsError } = await supabase
+      .from('soumissions')
+      .select(`
+        id,
+        etudiant_id,
+        exercice_id,
+        notes (
+          note_finale
+        )
+      `)
+      .eq('etudiant_id', id);
+
+    if (soumissionsError) {
+      console.error("Erreur récupération des soumissions:", soumissionsError);
+      return res.status(500).json({ error: soumissionsError.message });
+    }
+
+    // Map exercises and merge with submission data
+    const notesEtExercices = exercices.map(exercice => {
+      // Find submission for this exercise if it exists
+      const soumission = soumissions?.find(s => s.exercice_id === exercice.id);
+      
+      // Important: Return note as null if not available (instead of a string)
+      return {
+        exercice_id: exercice.id,
+        exercice: `Exercice ${exercice.id}`,
+        titre: exercice.titre || 'Non défini',
+        note: soumission?.notes?.note_finale !== undefined ? 
+              Number(soumission.notes.note_finale) : 
+              null
+      };
+    });
+    
+    res.json(notesEtExercices);
+  } catch (err) {
+    console.error("Erreur serveur :", err);
+    res.status(500).json({ error: "Erreur interne du serveur" });
+  }
+});
+
+
+//détection de plagiat
 app.post('/exercices/:id/detecter-plagiat', async (req, res) => {
   const { id } = req.params; // ID de l'exercice
   
@@ -754,6 +812,120 @@ function calculateSimilarity(file1, file2) {
 }
 
 //Performances
+app.get('/performances', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !userData) {
+      return res.status(401).json({ error: 'Token invalide' });
+    }
+    if (userError) throw userError;
+
+    const userId = userData.user.id;
+
+    // Fetch all submissions and notes for the student
+    const { data: submissions, error: submissionsError } = await supabase
+      .from('soumissions')
+      .select(`
+        id,
+        exercice_id,
+        date_soumission,
+        exercices (
+          pdf_url,
+          commentaire
+        ),
+        notes (
+          note_finale
+        )
+      `)
+      .eq('etudiant_id', userId)
+      .order('date_soumission', { ascending: false });
+
+    if (submissionsError) throw submissionsError;
+
+    const { data: exercices, error: exercicesError } = await supabase
+      .from('exercices')
+      .select(`*
+      `);
+
+    if (exercicesError) throw exercicesError;
+
+    // Calculate performance metrics
+    const totalExercises = exercices.length;
+    const completedExercises = submissions.filter(s => s.notes).length;
+    const scores = submissions
+      .filter(s => s.notes)
+      .map(s => s.notes.note_finale);
+
+    const averageScore = scores.length > 0 
+      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) 
+      : 0;
+    const bestScore = scores.length > 0 
+      ? Math.round(Math.max(...scores)) 
+      : 0;
+
+    // Get recent submissions
+    const recentSubmissions = submissions
+      .slice(0, 3)
+      .map(sub => ({
+        id: sub.id,
+        exerciceId: sub.exercice_id,
+        titre: sub.exercices.commentaire || `Exercice ${sub.exercice_id}`,
+        score: sub.notes ? Math.round(sub.notes.note_finale) : 0,
+        date: sub.date_soumission
+      }));
+
+    // Calculate monthly progress
+    const monthlyScores = new Map();
+    submissions.forEach(sub => {
+      if (sub.notes) {
+        const month = new Date(sub.date_soumission).toLocaleString('fr', { month: 'short' });
+        if (!monthlyScores.has(month)) {
+          monthlyScores.set(month, []);
+        }
+        monthlyScores.get(month).push(sub.notes.note_finale);
+      }
+    });
+
+    const monthlyProgress = Array.from(monthlyScores.entries())
+      .map(([month, scores]) => ({
+        month,
+        score: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+      }))
+      .slice(-4);
+
+    res.json({
+      completionRate: Math.round((completedExercises / totalExercises) * 100) || 0,
+      averageScore,
+      bestScore,
+      exercisesCompleted: completedExercises,
+      totalExercises,
+      recentSubmissions,
+      monthlyProgress,
+      skillsRadar: [
+        { skill: "SQL Basique", value: averageScore },
+        { skill: "Jointures", value: averageScore },
+        { skill: "Agrégation", value: averageScore },
+        { skill: "Optimisation", value: averageScore },
+        { skill: "Normalisation", value: averageScore }
+      ]
+    });
+
+  } catch (error) {
+    console.error('Error fetching performance data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+//détection de plagiat
 app.post('/exercices/:id/detecter-plagiat', async (req, res) => {
   const { id } = req.params; // ID de l'exercice
   
