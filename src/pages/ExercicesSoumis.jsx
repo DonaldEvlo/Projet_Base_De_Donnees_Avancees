@@ -177,7 +177,7 @@ const handlePlagiatDetection = async () => {
       const token = sessionData?.session?.access_token;
       
       const response = await fetch(
-        `http://localhost:5000/soumissions/${submission.id}/detecter-plagiat`,
+        `http://localhost:5000/soumissions/${selectedExercise.id}/detecter-plagiat`,
         {
           method: "POST",
           headers: {
