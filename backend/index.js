@@ -1420,7 +1420,8 @@ app.get('/soumissions/:id/plagiat', async (req, res) => {
     }
 
     if (!soumissions || soumissions.length === 0) {
-      return res.status(404).json({ message: 'Aucune soumission trouvée pour cet exercice' });
+      // Retourner un tableau vide si aucune soumission n'est trouvée
+      return res.status(200).json([]);
     }
 
     // Extraire les IDs de soumission
@@ -1434,6 +1435,11 @@ app.get('/soumissions/:id/plagiat', async (req, res) => {
     
     if (plagiatError) {
       throw plagiatError;
+    }
+
+    // Si aucune information de plagiat n'est trouvée, retourner un tableau vide
+    if (!plagiatInfos || plagiatInfos.length === 0) {
+      return res.status(200).json([]);
     }
 
     // Récupérer les informations des étudiants associés aux soumissions
@@ -1453,17 +1459,19 @@ app.get('/soumissions/:id/plagiat', async (req, res) => {
       // Trouver l'étudiant correspondant à cette soumission
       const etudiant = etudiants.find(e => e.id === soumission?.etudiant_id);
 
-      // Trouver les étudiants correspondant aux soumissions similaires
-      const similaritesDetails = plagiat.details.similarSubmissions.map(similarSub => {
-        const similarSoumission = soumissions.find(s => s.id === similarSub.id);
-        const similarEtudiant = etudiants.find(e => e.id === similarSoumission?.etudiant_id);
-        
-        return {
-          ...similarSub,
-          soumission_id: similarSub.id,
-          etudiant_nom: similarEtudiant?.nom || 'Inconnu'
-        };
-      });
+      // Vérifier si plagiat.details existe et contient similarSubmissions
+      const similaritesDetails = plagiat.details && plagiat.details.similarSubmissions 
+        ? plagiat.details.similarSubmissions.map(similarSub => {
+            const similarSoumission = soumissions.find(s => s.id === similarSub.id);
+            const similarEtudiant = etudiants.find(e => e.id === similarSoumission?.etudiant_id);
+            
+            return {
+              ...similarSub,
+              soumission_id: similarSub.id,
+              etudiant_nom: similarEtudiant?.nom || 'Inconnu'
+            };
+          })
+        : [];
 
       return {
         id: plagiat.id,
@@ -1471,7 +1479,7 @@ app.get('/soumissions/:id/plagiat', async (req, res) => {
         etudiant_id: soumission?.etudiant_id,
         etudiant_nom: etudiant?.nom || 'Inconnu',
         similarite: plagiat.similarite,
-        message: plagiat.details.message,
+        message: plagiat.details?.message || 'Analyse de plagiat',
         similarites: similaritesDetails
       };
     });

@@ -1,17 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { 
-  FaChartLine, 
-  FaCheckCircle, 
-  FaChevronDown, 
-  FaChevronUp,
+import {
+  FaCheckCircle,
+  FaEnvelope,
+  FaExclamationCircle,
   FaExclamationTriangle,
-  FaUser,
+  FaEye,
   FaInfoCircle,
   FaLink,
-  FaEnvelope,
-  FaEye,
-  FaExclamationCircle
+  FaUser
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import supabase from "../../supabaseClient";
