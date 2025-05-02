@@ -11,7 +11,8 @@ app.use(express.json());
 // app.use(cors()); 
 app.use(cors({
   origin: ['http://localhost:5173',
-    'http://localhost:4173'
+    'http://localhost:4173',
+    'https://projet-base-de-donnees-avancees.vercel.app'
   ], // 🔐 Spécifie ton front
   credentials: true               // 🔐 Autorise les cookies
 }));
