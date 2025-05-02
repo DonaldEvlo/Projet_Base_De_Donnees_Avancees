@@ -97,6 +97,9 @@ function analyzeQuality(text) {
 app.post('/api/correct', upload.single('pdf'), async (req, res) => {
   console.time('⏱️ Temps total de traitement');
   
+  // Déclarer fallbackScore au niveau de la fonction pour qu'il soit accessible partout
+  let fallbackScore = 10;
+  
   try {
     if (!req.file) {
       console.log('❌ Aucun fichier reçu');
@@ -112,7 +115,7 @@ app.post('/api/correct', upload.single('pdf'), async (req, res) => {
     console.timeEnd('⏱️ Extraction du texte PDF');
     
     // Pré-analyse du contenu pour avoir une note de secours en cas de timeout
-    const fallbackScore = analyzeQuality(fileContent);
+    fallbackScore = analyzeQuality(fileContent);
     console.log(`📊 Score de secours calculé: ${fallbackScore}/20`);
     
     // Tronquer le contenu pour les fichiers très longs
@@ -168,8 +171,8 @@ Donne uniquement une note entre 0 et 20 sans explication.`;
     console.error("❌ Erreur lors de la correction:", error.message);
     
     // Si l'erreur est due au timeout ou à l'abort
-    if (error.name === 'AbortError' || error.name === 'CanceledError' || error.message.includes('aborted')) {
-      const fallbackNote = Math.round(fallbackScore || 10); // Utiliser la note de secours ou 10 par défaut
+    if (error.name === 'AbortError' || error.name === 'CanceledError' || error.message.includes('aborted') || error.message.includes('canceled')) {
+      const fallbackNote = Math.round(fallbackScore); // Utiliser la note de secours
       console.log(`⏱️ Timeout atteint - utilisation de la note de secours: ${fallbackNote}/20`);
       
       return res.status(200).json({ 

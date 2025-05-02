@@ -10,7 +10,9 @@ const port = 5000; // Port fixe
 app.use(express.json());
 // app.use(cors()); 
 app.use(cors({
-  origin: 'http://localhost:5173', // 🔐 Spécifie ton front
+  origin: ['http://localhost:5173',
+    'http://localhost:4173'
+  ], // 🔐 Spécifie ton front
   credentials: true               // 🔐 Autorise les cookies
 }));
 

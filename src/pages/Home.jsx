@@ -1,7 +1,7 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/home.css";
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const Home = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -114,7 +114,7 @@ const Home = () => {
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            Plateforme SGBD
+            Plateforme D'EVALUATION SGBD
           </motion.h1>
         </motion.div>
       </motion.div>
@@ -252,7 +252,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
               >
-                Gestion avancée des bases de données pour étudiants et
+                Evaluation sur des exercices de bases de données avancées pour étudiants et
                 enseignants
               </motion.p>
             </motion.section>
