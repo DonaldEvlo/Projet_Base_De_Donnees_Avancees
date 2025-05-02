@@ -64,11 +64,12 @@ Notre architecture microservices permet une scalabilité optimale et une mainten
 
 ```bash
 # Cloner le dépôt
-git clone https://github.com/votre-username/deepeval.git
+git clone https://github.com/DonaldEvlo/Projet_Base_De_Donnees_Avancees.git
 
 # Installer les dépendances
-cd deepeval
 npm install #pour le frontend
+cd backend
+npm install pour le backend
 
 # Configuration environnement
 cp .env.example .env
