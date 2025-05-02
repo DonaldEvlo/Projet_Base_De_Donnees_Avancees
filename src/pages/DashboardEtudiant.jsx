@@ -1,20 +1,20 @@
 import {
-  AnimatePresence,
-  motion,
-  useMotionValue,
-  useTransform,
+    AnimatePresence,
+    motion,
+    useMotionValue,
+    useTransform,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import {
-  FaArrowRight,
-  FaChartLine,
-  FaFileAlt,
-  FaHome,
-  FaLaptopCode,
-  FaSearch
+    FaArrowRight,
+    FaChartLine,
+    FaFileAlt,
+    FaHome,
+    FaLaptopCode,
+    FaSearch
 } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
 import { FaNoteSticky } from "react-icons/fa6";
+import { Link, useNavigate } from "react-router-dom";
 import { signOut } from "../../backend/services/authServices";
 
 const DashboardEtudiant = () => {
@@ -49,7 +49,7 @@ const DashboardEtudiant = () => {
     const fetchExercises = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:5000/exercices");
+        const response = await fetch("https://projet-base-de-donnees-avancees-backend.onrender.com/exercices");
         if (!response.ok)
           throw new Error("Erreur lors de la récupération des exercices");
         const data = await response.json();

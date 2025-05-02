@@ -1,14 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
-  FaArrowLeft,
-  FaBook,
-  FaChartBar,
-  FaChartLine,
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaMedal,
-  FaUserGraduate,
+    FaArrowLeft,
+    FaBook,
+    FaChartBar,
+    FaChartLine,
+    FaCheckCircle,
+    FaExclamationTriangle,
+    FaMedal,
+    FaUserGraduate,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -154,7 +154,7 @@ const StudentPerformanceDashboard = () => {
         }
 
         // Changer l'URL par celle de votre API
-        const response = await fetch('http://localhost:5000/performance-etudiants', {
+        const response = await fetch('https://projet-base-de-donnees-avancees-backend.onrender.com/performance-etudiants', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

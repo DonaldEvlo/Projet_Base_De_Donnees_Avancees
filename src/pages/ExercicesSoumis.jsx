@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  FaCheckCircle,
-  FaChevronDown,
-  FaChevronUp,
-  FaFileDownload,
-  FaUser,
+    FaCheckCircle,
+    FaChevronDown,
+    FaChevronUp,
+    FaFileDownload,
+    FaUser,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { getEtudiantById } from "../../backend/services/authServices";
@@ -126,7 +126,7 @@ const handleAIGrading = async (submission, exerciseId) => {
         const token = sessionData?.session?.access_token;
 
         const response = await fetch(
-          `http://localhost:5000/${submission.id}/noter`,
+          `https://projet-base-de-donnees-avancees-backend.onrender.com/${submission.id}/noter`,
           {
             method: "POST",
             headers: {
@@ -177,7 +177,7 @@ const handlePlagiatDetection = async () => {
       const token = sessionData?.session?.access_token;
       
       const response = await fetch(
-        `http://localhost:5000/soumissions/${selectedExercise.id}/detecter-plagiat`,
+        `https://projet-base-de-donnees-avancees-backend.onrender.com/soumissions/${selectedExercise.id}/detecter-plagiat`,
         {
           method: "POST",
           headers: {
@@ -198,7 +198,7 @@ const handlePlagiatDetection = async () => {
     
     // Appeler l'API avec l'ID de l'exercice au lieu de l'ID de la soumission
     const response = await fetch(
-      `http://localhost:5000/soumissions/${selectedExercise.id}/detecter-plagiat`,
+      `https://projet-base-de-donnees-avancees-backend.onrender.com/soumissions/${selectedExercise.id}/detecter-plagiat`,
       {
         method: "POST",
         headers: {
@@ -248,7 +248,7 @@ const handlePlagiatDetection = async () => {
 
         const token = sessionData.session.access_token;
 
-        const response = await fetch("http://localhost:5000/mes-exercices", {
+        const response = await fetch("https://projet-base-de-donnees-avancees-backend.onrender.com/mes-exercices", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -285,7 +285,7 @@ const handlePlagiatDetection = async () => {
       const token = sessionData.session.access_token;
 
       const response = await fetch(
-        `http://localhost:5000/exercices/${exerciseId}/soumissions`,
+        `https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${exerciseId}/soumissions`,
         {
           method: "GET",
           headers: {
@@ -347,7 +347,7 @@ const handlePlagiatDetection = async () => {
       const token = sessionData?.session?.access_token;
 
       const response = await fetch(
-        `http://localhost:5000/${submissionId}/noter`,
+        `https://projet-base-de-donnees-avancees-backend.onrender.com/${submissionId}/noter`,
         {
           method: "POST",
           headers: {

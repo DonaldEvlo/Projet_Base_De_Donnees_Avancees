@@ -22,7 +22,7 @@ function ExerciseDetail() {
   useEffect(() => {
     const fetchExercice = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/exercices/${id}`);
+        const response = await fetch(`https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${id}`);
         if (!response.ok)
           throw new Error("Erreur lors de la récupération de l'exercice");
         const data = await response.json();
@@ -91,7 +91,7 @@ function ExerciseDetail() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/exercices/${id}/submit`,
+        `https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${id}/submit`,
         {
           method: "POST",
           body: formData,

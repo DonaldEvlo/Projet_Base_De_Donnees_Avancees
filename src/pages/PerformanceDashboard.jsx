@@ -1,11 +1,11 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  FaChartLine,
-  FaCheckCircle,
-  FaChevronDown,
-  FaChevronUp,
-  FaTrophy,
+    FaChartLine,
+    FaCheckCircle,
+    FaChevronDown,
+    FaChevronUp,
+    FaTrophy,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -91,7 +91,7 @@ const PerformanceDashboard = () => {
           return;
         }
 
-        const response = await fetch("http://localhost:5000/performances", {
+        const response = await fetch("https://projet-base-de-donnees-avancees-backend.onrender.com/performances", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${session.access_token}`,

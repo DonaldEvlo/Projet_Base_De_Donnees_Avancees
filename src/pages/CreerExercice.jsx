@@ -1,14 +1,14 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  FaCalendarAlt,
-  FaCommentDots,
-  FaFileAlt,
-  FaPen,
-  FaArrowLeft,
+    FaArrowLeft,
+    FaCalendarAlt,
+    FaCommentDots,
+    FaFileAlt,
+    FaPen,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 const CreerExercice = () => {
   const [title, setTitle] = useState("");
@@ -66,7 +66,7 @@ const CreerExercice = () => {
     formData.append("professeur_id", professeurId);
 
     try {
-      const response = await fetch("http://localhost:5000/exercices", {
+      const response = await fetch("https://projet-base-de-donnees-avancees-backend.onrender.com/exercices", {
         method: "POST",
         body: formData,
       });

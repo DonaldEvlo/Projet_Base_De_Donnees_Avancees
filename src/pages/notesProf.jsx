@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import {
-  FaArrowLeft,
-  FaBook,
-  FaChartBar,
-  FaExclamationTriangle,
-  FaMedal,
-  FaUserTie,
+    FaArrowLeft,
+    FaBook,
+    FaChartBar,
+    FaExclamationTriangle,
+    FaMedal,
+    FaUserTie,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -94,7 +94,7 @@ const NotesParProf = () => {
         
         const token = sessionData.session.access_token;
         
-        const response = await fetch('http://localhost:5000/professeur/notes', {
+        const response = await fetch('https://projet-base-de-donnees-avancees-backend.onrender.com/professeur/notes', {
           credentials: 'include',
           headers: {
             'Authorization': `Bearer ${token}`

@@ -12,7 +12,7 @@ import ListeExercices from "../../src/pages/ListeExercices";
 import ModifierExercice from "../../src/pages/ModifierExercice";
 import NotesEtudiant from "../../src/pages/notesEtudiants";
 import NotesParProf from "../../src/pages/notesProf";
-import NotFound from "../../src/pages/notFound";
+import NotFound from "../../src/pages/NotFound";
 import PerformanceDashboard from "../../src/pages/PerformanceDashboard";
 import RapportPlagiat from "../../src/pages/RapportPlagiat";
 import LoginEtudiant from "../../src/pages/signin etudiant";

@@ -1,8 +1,8 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FaEdit, FaTasks, FaTrashAlt, FaPlus } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTasks, FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import supabase from "../../supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
 
 const ListeExercices = () => {
   const [exercises, setExercises] = useState([]);
@@ -33,7 +33,7 @@ const ListeExercices = () => {
 
         const token = sessionData.session.access_token;
 
-        const response = await fetch("http://localhost:5000/mes-exercices", {
+        const response = await fetch("https://projet-base-de-donnees-avancees-backend.onrender.com/mes-exercices", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -68,7 +68,7 @@ const ListeExercices = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token;
 
-      const response = await fetch(`http://localhost:5000/exercices/${id}`, {
+      const response = await fetch(`https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

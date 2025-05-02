@@ -1,7 +1,7 @@
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FaPen, FaArrowLeft, FaSun, FaMoon, FaCheck } from "react-icons/fa";
+import { FaCheck, FaPen } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import supabase from "../../supabaseClient";
 
 const ModifierExercice = () => {
@@ -73,7 +73,7 @@ const ModifierExercice = () => {
 
         const token = sessionData.session.access_token;
 
-        const response = await fetch(`http://localhost:5000/exercices/${id}`, {
+        const response = await fetch(`https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -133,7 +133,7 @@ const ModifierExercice = () => {
       formData.append("professeur_id", professeurId);
       formData.append("date_limite", deadline);
 
-      const response = await fetch(`http://localhost:5000/exercices/${id}`, {
+      const response = await fetch(`https://projet-base-de-donnees-avancees-backend.onrender.com/exercices/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

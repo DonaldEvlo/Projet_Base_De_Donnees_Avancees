@@ -1,14 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
-  FaCheckCircle,
-  FaEnvelope,
-  FaExclamationCircle,
-  FaExclamationTriangle,
-  FaEye,
-  FaInfoCircle,
-  FaLink,
-  FaUser
+    FaCheckCircle,
+    FaEnvelope,
+    FaExclamationCircle,
+    FaExclamationTriangle,
+    FaEye,
+    FaInfoCircle,
+    FaLink,
+    FaUser
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import supabase from "../../supabaseClient";
@@ -100,7 +100,7 @@ const RapportPlagiat = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:5000/soumissions/${id}/plagiat`, {
+        const response = await fetch(`https://projet-base-de-donnees-avancees-backend.onrender.com/soumissions/${id}/plagiat`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${session.access_token}`,
