@@ -1,11 +1,11 @@
-  # 🎓 DeepEval - Plateforme Intelligente d'Évaluation Automatisée
+  # Plateforme Intelligente d'Évaluation Automatisée
 
 ## Accès à la plateforme en ligne
 La plateforme est disponible sur : https://projet-base-de-donnees-avancees.vercel.app/
 
 ## 📋 Présentation
 
-DeepEval est une plateforme web innovante qui révolutionne l'évaluation des travaux en bases de données pour les environnements académiques. Grâce à l'intégration de l'IA DeepSeek via Ollama, notre solution offre une correction automatisée des exercices, permettant aux enseignants de se concentrer sur l'accompagnement pédagogique plutôt que sur la correction répétitive.
+Notre apllicatio web est une plateforme web innovante qui révolutionne l'évaluation des travaux en bases de données pour les environnements académiques. Grâce à l'intégration de l'IA DeepSeek via Ollama, notre solution offre une correction automatisée des exercices, permettant aux enseignants de se concentrer sur l'accompagnement pédagogique plutôt que sur la correction répétitive.
 
 ## ✨ Fonctionnalités principales
 
